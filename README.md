@@ -22,10 +22,17 @@
 - 会場: サウンドステージ（1日11組まで × 2日 = 最大22組、¥85,000/日、20分演奏 + 15分転換）
 - 出演: 確定21組（詳細は主催側の管理メモ参照、このリポジトリには載せない）
 
+## 開発ルール（CI/CD）
+
+- **main への直接 push / 直接マージは禁止**。変更は必ずブランチを切って Pull Request 経由で入れる（ブランチ保護で強制）。
+- CI（`.github/workflows/ci.yml`）: push / PR で `astro check` と `astro build` を自動実行。CI が通らない PR はマージできない。
+- CD（`.github/workflows/deploy.yml`）: main へのマージで GitHub Pages へ自動デプロイ。Pages の Source は GitHub Actions に設定済み。
+
 ## 状態
 
 - [x] リポジトリ作成（private）
-- [ ] 技術スタック確定
+- [x] Astro プロジェクトの初期化（最小構成、トップページ仮置き）
+- [x] CI/CD 整備（CI + GitHub Pages デプロイ + main ブランチ保護）
+- [ ] 技術スタック確定（現行は推奨案で初期化済み）
 - [ ] タイトル・世界観の確定
-- [ ] Astro プロジェクトの初期化
-- [ ] ホスティング決定と自動デプロイ
+- [ ] ホスティング最終決定（当面 GitHub Pages、独自ドメインは未定）
