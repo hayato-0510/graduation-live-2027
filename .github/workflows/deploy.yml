@@ -1,9 +1,9 @@
 name: Deploy to GitHub Pages
 
 # CD: main への push で GitHub Pages へデプロイする。
-# 前提: リポジトリの Settings > Pages で Source を "GitHub Actions" に設定すること。
-# 注意: private リポジトリのままでは GitHub Pages は公開できない（Free プラン）。
-#       サイト公開のタイミングでリポジトリを public に切り替えてから有効になる。
+# Pages の Source は "GitHub Actions" に設定済み（2026-11-12、有効化と初回デプロイ成功を確認）。
+# 注意: リポジトリは private でも、公開された Pages の URL は誰でも閲覧できる。
+#       まだ見せたくない情報は載せないこと。
 
 on:
   push:
