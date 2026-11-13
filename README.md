@@ -2,7 +2,9 @@
 
 卒業ライブ（2027-03-06 Sat – 03-07 Sun、サウンドステージ）公式サイトのリポジトリ。
 
-現在は立ち上げ段階。タイトルと世界観は未決定（高専祭テーマ「collage」とリンクさせつつ、今年の高専祭サイトのOP演出とは被らせない方針）。
+現在は立ち上げ段階。タイトルは recollage を本線に検討中（高専祭テーマ「collage」とリンクさせつつ、今年の高専祭サイトのOP演出とは被らせない方針）。
+
+本番: https://graduation-live-2027.pages.dev/ （Cloudflare Pages）
 
 ## 技術スタック（案）
 
@@ -14,7 +16,7 @@
 - スタイル: 素の CSS + デザイントークン（CSS変数）
 - データ: バンド情報・タイムテーブルは `src/data/` の JSON で管理し、コンポーネントに直書きしない
 - パッケージ管理: npm / Node 24（高専祭サイトと同一）
-- ホスティング: 未定（Cloudflare Pages / Vercel / GitHub Pages のいずれか、静的配信）
+- ホスティング: Cloudflare Pages（Git連携、2026-11-13 移行完了）
 
 ## イベント概要（確定分）
 
@@ -26,13 +28,13 @@
 
 - **main への直接 push / 直接マージは禁止**。変更は必ずブランチを切って Pull Request 経由で入れる（ブランチ保護で強制）。
 - CI（`.github/workflows/ci.yml`）: push / PR で `astro check` と `astro build` を自動実行。CI が通らない PR はマージできない。
-- CD（`.github/workflows/deploy.yml`）: main へのマージで GitHub Pages へ自動デプロイ。Pages の Source は GitHub Actions に設定済み。
+- CD: Cloudflare Pages の Git 連携。main へのマージで本番（graduation-live-2027.pages.dev）へ自動デプロイされ、他のブランチはプレビューデプロイになる。GitHub Actions 側にデプロイワークフローは無い（旧 GitHub Pages 用 `deploy.yml` は 2026-11-13 に削除）。
 
 ## 状態
 
 - [x] リポジトリ作成（private）
 - [x] Astro プロジェクトの初期化（最小構成、トップページ仮置き）
-- [x] CI/CD 整備（CI + GitHub Pages デプロイ + main ブランチ保護）
+- [x] CI/CD 整備（CI + Cloudflare Pages デプロイ + main ブランチ保護）
 - [ ] 技術スタック確定（現行は推奨案で初期化済み）
 - [ ] タイトル・世界観の確定
-- [ ] ホスティング最終決定（当面 GitHub Pages、独自ドメインは未定）
+- [x] ホスティング最終決定（Cloudflare Pages、`.pages.dev`、独自ドメインは未定）
