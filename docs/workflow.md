@@ -5,7 +5,7 @@
 
 ## 全体像
 
-Issue（やること）→ ブランチ → 変更 → ローカル確認 → Pull Request → プレビュー確認 → レビュー → マージ → 本番反映
+Issue（やること）→ ブランチ → 変更 → ローカル確認 → Pull Request（dev 宛て）→ プレビュー確認 → レビュー → dev にマージ → 昇格 PR → 本番反映
 
 ## 1. Issue を見る
 
@@ -14,7 +14,7 @@ Issue は「やること」の一覧（GitHub の Issues タブ）。作業は I
 
 ## 2. ブランチを切る
 
-main から作業用ブランチを切る。ルールと名前の付け方は [branch-rules.md](branch-rules.md)。
+dev から作業用ブランチを切る。ルールと名前の付け方は [branch-rules.md](branch-rules.md)。
 
 ## 3. 変更する
 
@@ -37,7 +37,7 @@ main から作業用ブランチを切る。ルールと名前の付け方は [b
 
 ## 5. Pull Request を作る
 
-Pull Request（PR）は「この変更を main に入れてよいですか」という申請。
+Pull Request（PR）は「この変更を dev に入れてよいですか」という申請。宛先（base）が dev になっているか最初に確認する。
 テンプレートに沿って、変更内容と自分の段階にチェックを入れて書く。
 
 PR を作ると自動で2つ起きる。
@@ -61,7 +61,15 @@ PR を作ると自動で2つ起きる。
 - 指摘が付いたら直して push する。同じ PR に自動で反映され、CI も回り直す
 - 会話が残っている PR はマージできない決まり（解決済みにしてから）
 
-## 8. マージと本番反映
+## 8. dev にマージ
 
-マージすると main に入り、Cloudflare Pages が自動で本番を更新する（数分）。本番 URL で最終確認したら完了。
-マージ後の後片付けは [branch-rules.md](branch-rules.md)、本番で問題が起きた時の戻し方は [operations.md](operations.md)。
+マージすると変更が dev に入る。dev のプレビュー URL（https://dev.graduation-live-2027.pages.dev/）で、他の人の変更と合体した状態を確認できる。ここまでが普段の作業の完了。
+マージ後の後片付けは [branch-rules.md](branch-rules.md)。
+
+## 9. 本番へ出す（昇格）
+
+本番に出すタイミングで、dev → main の Pull Request（昇格 PR）を1本作る。dev に溜まった変更がまとめて本番に出る。
+
+- 昇格 PR でも CI が全部緑であることが必要
+- マージすると Cloudflare Pages が自動で本番を更新する（数分）。本番 URL で最終確認したら完了
+- 本番で問題が起きた時の戻し方は [operations.md](operations.md)
