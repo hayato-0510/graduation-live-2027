@@ -9,7 +9,10 @@
 
 | 知りたいこと                           | ファイル                                                      |
 | -------------------------------------- | ------------------------------------------------------------- |
-| 開発の始め方・作業の流れ               | [docs/dev-guide.md](docs/dev-guide.md)                        |
+| 開発の始め方（環境構築）               | [docs/dev-guide.md](docs/dev-guide.md)                        |
+| 開発の流れ（PR から本番まで）          | [docs/workflow.md](docs/workflow.md)                          |
+| ブランチのルール                       | [docs/branch-rules.md](docs/branch-rules.md)                  |
+| 運用ルール（本番・データの扱い）       | [docs/operations.md](docs/operations.md)                      |
 | 技術スタックと理由                     | [docs/stack.md](docs/stack.md)                                |
 | 出演バンド・タイムテーブル             | `src/data/bands.json` / `src/data/timetable.json`（ここが正） |
 | サイト共通情報（日程・会場・タイトル） | `src/data/site.json`（ここが正）                              |
@@ -20,4 +23,4 @@
 - コンテンツは `src/data/` の JSON に書き、コンポーネントに直書きしない
 - UI を変えたら PR にスクリーンショットを付ける
 
-コマンドと詳しい手順は [docs/dev-guide.md](docs/dev-guide.md) に全部ある。
+迷ったら上の表から辿る。開発の全体像は [docs/workflow.md](docs/workflow.md) にある。
