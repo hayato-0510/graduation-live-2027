@@ -11,8 +11,9 @@
   --line: #2a2d2f;
   --font-display: "Anton", "Bebas Neue", sans-serif;
   --font-label: "Bebas Neue", "Anton", sans-serif;
-  --font-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic",
-    Meiryo, sans-serif;
+  --font-body:
+    "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo,
+    sans-serif;
   --max-width: 1080px;
 }
 
