@@ -1,19 +1,245 @@
 ---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import HeroTransform from "../components/HeroTransform";
 import site from "../data/site.json";
+import bandsData from "../data/bands.json";
+import timetable from "../data/timetable.json";
+import fesLogo from "../assets/fes-logo.png";
+import recollageLogo from "../assets/recollage-logo.png";
+
+interface Band {
+  name: string;
+  day: string | null;
+  startTime: string | null;
+  photo: string | null;
+}
+
+const bands = bandsData.bands as Band[];
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const dayLabel = (day: string | null) =>
+  day === "day1" ? "3/6 SAT" : day === "day2" ? "3/7 SUN" : "出演日 未定";
+
+const summaryItems = [
+  { label: "日程", value: site.dateLabel },
+  { label: "会場", value: site.venue },
+  { label: "開場・開演", value: site.doors ?? site.start ?? null },
+  { label: "入場方法", value: site.admission },
+];
 ---
 
-<html lang="ja">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{site.eventName} | {site.dateLabel}</title>
-  </head>
-  <body>
-    <main>
-      <h1>{site.eventName}</h1>
-      <p>{site.dateLabel}</p>
-      <p>{site.venue}</p>
-      <p>サイト準備中。タイトルと世界観は検討中です。</p>
-    </main>
-  </body>
-</html>
+<BaseLayout>
+  <main id="top">
+    <HeroTransform
+      client:load
+      fesLogoSrc={fesLogo.src}
+      recollageLogoSrc={recollageLogo.src}
+      dateLabel={site.dateLabel}
+      venue={site.venue}
+    />
+
+    {/* 要点バー: 開いてすぐ開催概要が分かるように。未定は未定と書く */}
+    <section class="summary-bar" aria-label="開催概要">
+      <dl>
+        {
+          summaryItems.map((item) => (
+            <div class="summary-item">
+              <dt>{item.label}</dt>
+              <dd class={item.value ? undefined : "tbd"}>
+                {item.value ?? "未定"}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
+    {/* 00 / RE:NOTE — About */}
+    <section class="section" id="about">
+      <div class="section-head">
+        <span class="no">00</span>
+        <h2>RE:NOTE</h2>
+        <span class="jp">このライブについて</span>
+      </div>
+      <p class="about-text">
+        高専祭の collage は、異なる断片が輪郭を残したまま重なった一枚だった。卒業ライブの
+        recollage
+        は、それを貼り直すことではない。祭りの後に日常へ戻った人と音の編成を、卒業前に一度だけ組み直し、平面ではなく時間の上に並べること。演奏が終わればその編成は残らないけれど、2日間だけ確かに完成する。
+      </p>
+    </section>
+
+    {/* 01 / FORMATION */}
+    <section class="section" id="formation">
+      <div class="section-head">
+        <span class="no">01</span>
+        <h2>FORMATION</h2>
+        <span class="jp">出演バンド</span>
+      </div>
+      <div class="band-grid">
+        {
+          bands.map((band, i) => (
+            <article class="band-slot">
+              <span class="band-no">{pad2(i + 1)}</span>
+              <h3 class="band-name">{band.name}</h3>
+              <p class="band-meta tbd">
+                {dayLabel(band.day)} ・ {band.startTime ?? "時刻 未定"}
+              </p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    {/* 02 / SEQUENCE */}
+    <section class="section" id="sequence">
+      <div class="section-head">
+        <span class="no">02</span>
+        <h2>SEQUENCE</h2>
+        <span class="jp">タイムテーブル</span>
+      </div>
+      <div class="day-frames">
+        {
+          [timetable.day1, timetable.day2].map((day) => (
+            <div class="day-frame">
+              <h3>{day.label}</h3>
+              {day.slots.length === 0 ? (
+                <p class="tbd">
+                  タイムテーブルは未定です。出演順と時刻が決まり次第、ここに並びます。
+                </p>
+              ) : (
+                <p class="tbd">準備中</p>
+              )}
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    {/* 03 / VENUE */}
+    <section class="section" id="venue">
+      <div class="section-head">
+        <span class="no">03</span>
+        <h2>VENUE</h2>
+        <span class="jp">会場</span>
+      </div>
+      <p class="venue-name">{site.venue}</p>
+      <p class="tbd">アクセスなどの詳細は、決まり次第ここに載せます。</p>
+    </section>
+  </main>
+
+  <style>
+    .summary-bar {
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: var(--bg-raised);
+    }
+
+    .summary-bar dl {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 18px 20px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px 24px;
+    }
+
+    .summary-item dt {
+      font-size: 12px;
+      letter-spacing: 0.16em;
+      color: var(--ink-dim);
+      margin-bottom: 2px;
+    }
+
+    .summary-item dd {
+      margin: 0;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    @media (min-width: 720px) {
+      .summary-bar dl {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .about-text {
+      max-width: 42em;
+      font-size: 16px;
+    }
+
+    .band-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    @media (min-width: 720px) {
+      .band-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .band-slot {
+      border: 1px solid var(--line);
+      background: var(--bg-raised);
+      padding: 16px;
+      min-height: 118px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .band-no {
+      font-family: var(--font-label);
+      font-size: 14px;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+    }
+
+    .band-name {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .band-meta {
+      margin: auto 0 0;
+      font-size: 12px;
+    }
+
+    .day-frames {
+      display: grid;
+      gap: 14px;
+    }
+
+    @media (min-width: 720px) {
+      .day-frames {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .day-frame {
+      border: 1px solid var(--line);
+      background: var(--bg-raised);
+      padding: 20px;
+    }
+
+    .day-frame h3 {
+      font-family: var(--font-label);
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      font-size: 19px;
+      margin: 0 0 10px;
+    }
+
+    .day-frame p {
+      margin: 0;
+    }
+
+    .venue-name {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 6px;
+    }
+  </style>
+</BaseLayout>
