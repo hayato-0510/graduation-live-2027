@@ -1,0 +1,90 @@
+/* デザイントークン（世界観シート準拠）
+   地: ステージブラック / 文字: オフホワイト / 差し色: 黄色（現在位置とリンクだけに使う）
+   紙白はファーストビューのロゴ変形の開始色としてだけ使う。 */
+:root {
+  --bg: #08090a;
+  --bg-raised: #101214;
+  --paper: #f8f8f8;
+  --ink: #f2f2ed;
+  --ink-dim: #b9bbb4;
+  --accent: #f4d21f;
+  --line: #2a2d2f;
+  --font-display: "Anton", "Bebas Neue", sans-serif;
+  --font-label: "Bebas Neue", "Anton", sans-serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic",
+    Meiryo, sans-serif;
+  --max-width: 1080px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: var(--ink);
+}
+
+.section {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 64px 20px;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+  margin-bottom: 28px;
+}
+
+.section-head .no {
+  font-family: var(--font-label);
+  font-size: 15px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+}
+
+.section-head h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(28px, 6vw, 44px);
+  letter-spacing: 0.04em;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.section-head .jp {
+  color: var(--ink-dim);
+  font-size: 14px;
+}
+
+.tbd {
+  color: var(--ink-dim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

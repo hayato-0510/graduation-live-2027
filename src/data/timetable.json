@@ -1,0 +1,1 @@
+{"day1":{"date":"2027-03-06","label":"Day 1 — 3/6 SAT","slots":[]},"day2":{"date":"2027-03-07","label":"Day 2 — 3/7 SUN","slots":[]},"note":"タイムテーブルの置き場。出演順・時刻が決まったら day1 / day2 の slots に { \"band\": \"バンド名\", \"start\": \"HH:MM\", \"end\": \"HH:MM\" } を入れる。今は未定。"}

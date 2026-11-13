@@ -1,0 +1,122 @@
+---
+import "../styles/global.css";
+import site from "../data/site.json";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+const pageTitle = title ?? `${site.title} — ${site.eventName} | ${site.dateLabel}`;
+const pageDescription =
+  description ??
+  `${site.eventName}「${site.title}」。${site.dateLabel}、${site.venue}。`;
+---
+
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={pageDescription} />
+    <title>{pageTitle}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="wordmark" href="#top" aria-label="トップへ戻る">
+        <span class="re">re</span>collage
+      </a>
+      <nav class="site-nav" aria-label="セクション">
+        <a href="#formation">FORMATION</a>
+        <a href="#sequence">SEQUENCE</a>
+        <a href="#venue">VENUE</a>
+      </nav>
+    </header>
+
+    <slot />
+
+    <footer class="site-footer">
+      <p class="foot-title"><span class="re">re</span>collage</p>
+      <p>
+        {site.eventName} — {site.dateLabel} / {site.venue}
+      </p>
+    </footer>
+
+    <style>
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0 16px;
+        background: rgba(8, 9, 10, 0.92);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .wordmark {
+        font-family: var(--font-display);
+        font-size: 22px;
+        letter-spacing: 0.03em;
+        text-decoration: none;
+        padding: 10px 4px;
+        line-height: 1;
+      }
+
+      .wordmark .re,
+      .foot-title .re {
+        color: var(--accent);
+      }
+
+      .site-nav {
+        display: flex;
+        gap: 2px;
+      }
+
+      .site-nav a {
+        font-family: var(--font-label);
+        font-size: 15px;
+        letter-spacing: 0.14em;
+        text-decoration: none;
+        padding: 14px 10px;
+        min-height: 48px;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .site-nav a:hover,
+      .site-nav a:focus-visible {
+        color: var(--accent);
+      }
+
+      .site-footer {
+        border-top: 1px solid var(--line);
+        max-width: var(--max-width);
+        margin: 0 auto;
+        padding: 40px 20px 56px;
+        color: var(--ink-dim);
+        font-size: 14px;
+      }
+
+      .foot-title {
+        font-family: var(--font-display);
+        font-size: 28px;
+        color: var(--ink);
+        margin: 0 0 8px;
+      }
+
+      .site-footer p {
+        margin: 4px 0;
+      }
+    </style>
+  </body>
+</html>
