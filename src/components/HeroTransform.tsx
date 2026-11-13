@@ -13,6 +13,11 @@ import "./HeroTransform.css";
  *
  * 作法:
  * - 自動再生ではなくスクロール駆動。スクロールすればそのまま下の情報へ行ける。
+ * - 進捗は「現在の scrollY とヒーロー区間の形状」だけから決まる純粋な関数にする。
+ *   scrollY が区間の開始位置以下なら進捗は必ず 0 で、計測値が一時的に
+ *   おかしくなっても（total <= 0 等）進捗が進むことはない。
+ * - 「見た」記録（sessionStorage）は、実際にスクロールイベントが起きて
+ *   進捗が末尾に達したときだけ書く。マウント直後やリサイズの再計算では書かない。
  * - prefers-reduced-motion の端末では変形後の静止画。
  * - 2回目以降の訪問（同一セッション）では変形済みから始める。
  *   ロゴ下のボタンで変形をもう一度見られる。
@@ -54,6 +59,11 @@ export default function HeroTransform({
   // "morph" = 変形を見せる / "done" = 変形後の静止画（reduced-motion・再訪時）
   const [mode, setMode] = useState<"morph" | "done">("morph");
   const markedSeen = useRef(false);
+  // replay 直後の巻き戻し中は「見た」を書かないためのガード。
+  // done→morph の切り替え時にブラウザがスクロール位置を区間の末尾側へ
+  // 復元することがあり、その一瞬のスクロールイベントで誤記録されるのを防ぐ。
+  // 進捗が末尾未満に戻った時点で解除される。
+  const rewindGuard = useRef(false);
 
   useEffect(() => {
     const reduced = window.matchMedia(
@@ -73,14 +83,45 @@ export default function HeroTransform({
   useEffect(() => {
     if (mode !== "morph") return;
     let raf = 0;
-    const update = () => {
+
+    // ヒーロー区間の形状: ドキュメント先頭から区間開始までの距離と、
+    // スクロールで進捗が 0→1 になるまでの移動量。
+    // ビューポート側の高さは window.innerHeight ではなく sticky 要素自身の
+    // 実高（100svh）で取る。ツールバーの出入り等で innerHeight が揺れても
+    // total が縮んで進捗が水増しされることがないようにするため。
+    const measure = () => {
       const el = scrollRef.current;
-      if (!el) return;
+      if (!el) return null;
       const rect = el.getBoundingClientRect();
-      const total = el.offsetHeight - window.innerHeight;
-      const p = total > 0 ? clamp01(-rect.top / total) : 1;
+      const docTop = rect.top + window.scrollY;
+      const sticky = el.firstElementChild as HTMLElement | null;
+      const viewH = sticky?.offsetHeight || window.innerHeight;
+      const total = el.offsetHeight - viewH;
+      return { docTop, total };
+    };
+
+    // fromScroll: 本物のスクロールイベント経由かどうか。
+    // 「見た」記録はスクロール経由で末尾に達したときだけ書く
+    // （マウント・リサイズの再計算で誤発火させない）。
+    const update = (fromScroll: boolean) => {
+      const g = measure();
+      if (!g) return;
+      // 進捗は scrollY の純粋な関数。区間開始位置より上にいる限り必ず 0。
+      // total が取れない・縮退している場合は進めない（旧実装はここで 1 に
+      // 倒していたため、計測が一瞬おかしくなるだけで変形が完了し、
+      // さらに「見た」まで記録されて再訪扱いになる不具合があった）。
+      const p =
+        g.total > 0 ? clamp01((window.scrollY - g.docTop) / g.total) : 0;
       setProgress(p);
-      if (p >= 0.98 && !markedSeen.current) {
+      if (fromScroll && rewindGuard.current && p < 0.98) {
+        rewindGuard.current = false;
+      }
+      if (
+        fromScroll &&
+        !rewindGuard.current &&
+        p >= 0.98 &&
+        !markedSeen.current
+      ) {
         markedSeen.current = true;
         try {
           window.sessionStorage.setItem(STORAGE_KEY, "1");
@@ -89,17 +130,21 @@ export default function HeroTransform({
         }
       }
     };
-    const onScroll = () => {
+
+    const schedule = (fromScroll: boolean) => () => {
       cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(update);
+      raf = requestAnimationFrame(() => update(fromScroll));
     };
-    update();
+    const onScroll = schedule(true);
+    const onResize = schedule(false);
+
+    update(false);
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("resize", onResize);
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("resize", onResize);
     };
   }, [mode]);
 
@@ -110,6 +155,7 @@ export default function HeroTransform({
       /* 何もしない */
     }
     markedSeen.current = false;
+    rewindGuard.current = true;
     setProgress(0);
     setMode("morph");
     requestAnimationFrame(() => {
@@ -157,7 +203,15 @@ export default function HeroTransform({
           role="img"
           aria-label="高専祭 collage ロゴが recollage ロゴへ組み替わる"
         >
-          <div style={{ opacity: fesOpacity, filter: `saturate(${saturate})` }}>
+          {/* height:100% が無いとラッパーの高さが 0 になり、%指定の
+              スライスと画像が全部潰れて collage ロゴが描画されない */}
+          <div
+            style={{
+              opacity: fesOpacity,
+              filter: `saturate(${saturate})`,
+              height: "100%",
+            }}
+          >
             {Array.from({ length: SLICES }, (_, i) => {
               const dir = i % 2 === 0 ? -1 : 1;
               const mag = 16 + ((i * 37) % 44);
