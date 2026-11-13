@@ -1,7 +1,9 @@
 # 卒業ライブサイト 開発フロー・PRプレビュー設計書
 
 作成: 2026-11-13
-状態: 設計（未実装）。実装はこの設計への承認後、移行PRから始める
+状態: 設計。本番の Cloudflare Pages 化は 2026-11-13 に方式A（Git連携）で先行実施済み（下記の実施状況を参照）。PRコメントへのプレビューURL自動投稿（方式Bの GitHub Actions 化）は未実施
+
+> 実施状況（2026-11-13 追記）: 本番は Cloudflare Pages の Git 連携で公開済み（https://graduation-live-2027.pages.dev/ 、GitHub Pages は停止・無効化済み）。この連携により、ブランチを push すると `<ブランチ名>.graduation-live-2027.pages.dev` のプレビューが自動で出ることと、PR のチェック欄に Cloudflare Pages の結果が出ることを実地で確認した（PR #3）。つまり dev 環境としてのプレビューは方式Aの範囲で既に動き始めている。残る方式Bの要素は「プレビューURLを PR コメントに自動投稿する」体験の再現と、CI 合格後にだけデプロイする制御で、必要性の判断はこの設計書のレビューに残す。なお、作成時に Workers 型プロジェクトとして作られた同名のアプリが Cloudflare 側に残っており、push のたびに Workers Builds のチェックが走る（デプロイは失敗する）。これは Cloudflare ダッシュボード側でプロジェクトを削除すれば止まる。
 対象リポジトリ: `hayato-0510/graduation-live-2027`（private、Astro + TypeScript + Reactアイランド + Motion、npm / Node 24）
 関連: `recollage-worldview-2026-11-13.md`（世界観）、`site-uiux-brief-2026-11-13.md`（UI/UX基準）、リポジトリ内 `docs/stack.md`（技術スタック）
 
