@@ -8,7 +8,8 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
-const pageTitle = title ?? `${site.title} — ${site.eventName} | ${site.dateLabel}`;
+const pageTitle =
+  title ?? `${site.title} — ${site.eventName} | ${site.dateLabel}`;
 const pageDescription =
   description ??
   `${site.eventName}「${site.title}」。${site.dateLabel}、${site.venue}。`;
@@ -42,7 +43,9 @@ const pageDescription =
     <slot />
 
     <footer class="site-footer">
-      <p class="foot-title"><span class="re">re</span>collage</p>
+      <p class="foot-title">
+        <span class="re">re</span>collage
+      </p>
       <p>
         {site.eventName} — {site.dateLabel} / {site.venue}
       </p>

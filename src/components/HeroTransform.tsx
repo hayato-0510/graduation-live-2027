@@ -308,7 +308,10 @@ export default function HeroTransform({
   if (mode === "done") {
     return (
       <section className="hero-static" aria-label="recollage">
-        <div className="hero-stage hero-stage--final" style={{ position: "relative" }}>
+        <div
+          className="hero-stage hero-stage--final"
+          style={{ position: "relative" }}
+        >
           <div className="hero-final-logo" style={{ opacity: 1 }}>
             <img src={recollageLogoSrc} alt="recollage" />
           </div>
@@ -394,7 +397,10 @@ export default function HeroTransform({
             <img src={recollageLogoSrc} alt="" draggable={false} />
           </div>
         </div>
-        <div className="hero-meta" style={{ opacity: metaOpacity, color: "#f2f2ed" }}>
+        <div
+          className="hero-meta"
+          style={{ opacity: metaOpacity, color: "#f2f2ed" }}
+        >
           <p className="dates">{dateLabel}</p>
           <p className="venue">{venue}</p>
           {collapsed && (

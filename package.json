@@ -26,7 +26,8 @@
     "dev": "astro dev",
     "preview": "astro preview",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "validate": "node scripts/validate-data.mjs"
   },
   "type": "module",
   "version": "0.0.1"
