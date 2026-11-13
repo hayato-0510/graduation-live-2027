@@ -16,6 +16,21 @@ import "./HeroTransform.css";
  * - 変形は一方向。スクロール位置から求めた進捗を「これまでに到達した最大値」
  *   で下限として保持し、上へスクロールしても巻き戻らない。完了（進捗 1）
  *   したらその訪問の間は最終状態（黒背景＋recollage ロゴ）に固定される。
+ * - 完了したら、変形用に確保していた余分な高さ（240vh のうち sticky の
+ *   1画面分を超える分）を畳み、ヒーローを1画面分だけにする。長い区間が
+ *   残ると、変形後もその分だけ「死んだスクロール距離」がページに残って
+ *   しまうため。畳むときは減った分だけスクロール位置を補正し、下の
+ *   コンテンツの見た目が跳ねないようにする。途中（進捗 < 1）では畳まない。
+ *   再演（replay）では高さを元に戻し、再演完了で再び畳む。再訪・
+ *   reduced-motion の静止画（done モード）は最初から1画面分の高さ。
+ *   畳むタイミングは「完了してからスクロール位置が安定した時点」に
+ *   遅らせる。サイト全体に scroll-behavior: smooth が効いているため、
+ *   完了した瞬間に畳んで位置補正の scrollTo を打つと、アンカーリンクの
+ *   スムーズスクロールの途中通過で発火して遷移をキャンセルしてしまう。
+ *   そこで scrollY をポーリングし、位置が安定したことを確認してから
+ *   高さ変更＋補正を一括で行う。スクロールイベントの発火間隔は
+ *   スムーズスクロール中に空くことがあるので、イベントのデバウンスでは
+ *   通過途中の発火を防ぎきれない、というのがポーリングにする理由。
  * - スクロール位置からの素の進捗は、scrollY が区間の開始位置以下なら必ず 0 で、
  *   計測値が一時的に おかしくなっても（total <= 0 等）進捗が進むことはない。
  *   初回表示はスクロールしない限り進まない（最大値の初期値は 0）。
@@ -73,8 +88,28 @@ export default function HeroTransform({
   // 進捗が開始位置付近（<= 0.02）まで戻った時点で解除する。
   // ガード中は位置から進捗を進めることもしない（表示は最大値のまま）。
   const rewindGuard = useRef(false);
+  // 変形完了後に区間の余分な高さを畳んだかどうか。
+  // ref は update() 内の同期判定用、state は JSX の height 切り替え用。
+  const collapsedRef = useRef(false);
+  const [collapsed, setCollapsed] = useState(false);
+  // 畳み予約（スクロール位置の安定待ち）のタイマーとポーリング状態。
+  // replay やアンマウントで解除する。
+  const collapseTimer = useRef<number | null>(null);
+  const collapseArmed = useRef(false);
+  const collapseLastY = useRef(0);
+  const collapseStable = useRef(0);
 
   useEffect(() => {
+    // ブラウザのスクロールアンカリングを切る。フラグメント遷移直後は
+    // 遷移先要素がアンカーとして保持され、畳みで文書高さが変わると
+    // アンカリング側も位置補正を行うため、自前の補正と二重に効いて
+    // スクロール位置が補正量の2倍ずれる（実測で確認）。このページで
+    // 文書高さを変えるのはヒーローの畳みだけで、その補正は自前で
+    // 行うので、アンカリングはマウント中ずっと不要。
+    const rootEl = document.documentElement;
+    const prevOverflowAnchor = rootEl.style.overflowAnchor;
+    rootEl.style.overflowAnchor = "none";
+
     const reduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -87,6 +122,9 @@ export default function HeroTransform({
     if (reduced || seen) {
       setMode("done");
     }
+    return () => {
+      rootEl.style.overflowAnchor = prevOverflowAnchor;
+    };
   }, []);
 
   useEffect(() => {
@@ -107,6 +145,60 @@ export default function HeroTransform({
       const viewH = sticky?.offsetHeight || window.innerHeight;
       const total = el.offsetHeight - viewH;
       return { docTop, total };
+    };
+
+    // 余分な高さを実際に畳む。スクロールが静止してから呼ばれる前提で、
+    // その時点の形状を取り直し、高さ変更＋スクロール位置補正を一括で行う。
+    // 補正の scrollTo は behavior: "instant" で即時に寄せる
+    // （サイト全体の scroll-behavior: smooth に任せると、補正自体が
+    // アニメーションになって通過点の位置がずれる）。
+    const doCollapse = () => {
+      collapseTimer.current = null;
+      collapseArmed.current = false;
+      if (collapsedRef.current) return;
+      const g = measure();
+      const el = scrollRef.current;
+      if (!g || !el) return;
+      collapsedRef.current = true;
+      if (g.total > 0) {
+        el.style.height = "100svh";
+        // 高さ変更のレイアウトを確定させてからスクロール位置を補正する
+        void el.offsetHeight;
+        const y = window.scrollY;
+        const ny = Math.max(0, y - g.total);
+        if (ny !== y) {
+          window.scrollTo({ top: ny, behavior: "instant" });
+        }
+      }
+      setCollapsed(true);
+    };
+
+    // 畳みの予約。scrollY を 100ms 間隔でポーリングし、位置が
+    // 連続して安定（2回 = 約200ms 以上不変）したら畳む。スムーズ
+    // スクロールの通過中は位置が変わり続けるため発火しない。
+    const pollStable = () => {
+      collapseTimer.current = null;
+      if (collapsedRef.current || !collapseArmed.current) return;
+      const y = window.scrollY;
+      if (y === collapseLastY.current) {
+        collapseStable.current += 1;
+      } else {
+        collapseStable.current = 0;
+        collapseLastY.current = y;
+      }
+      if (collapseStable.current >= 2) {
+        doCollapse();
+        return;
+      }
+      collapseTimer.current = window.setTimeout(pollStable, 100);
+    };
+
+    const scheduleCollapse = () => {
+      if (collapsedRef.current || collapseArmed.current) return;
+      collapseArmed.current = true;
+      collapseLastY.current = window.scrollY;
+      collapseStable.current = 0;
+      collapseTimer.current = window.setTimeout(pollStable, 100);
     };
 
     // fromScroll: 本物のスクロールイベント経由かどうか。
@@ -151,6 +243,14 @@ export default function HeroTransform({
           /* sessionStorage が使えない環境では何もしない */
         }
       }
+
+      // 変形が完了したら、余分な高さを畳む予約をする。即時に畳まず
+      // スクロールが静止してから実行する（理由は冒頭コメント参照）。
+      // 区間は 240vh あるが sticky は 1画面分しかないため、完了後も
+      // そのままにすると (区間高 − 1画面分) の死んだスクロール距離が残る。
+      if (effective >= 1) {
+        scheduleCollapse();
+      }
     };
 
     const schedule = (fromScroll: boolean) => () => {
@@ -165,6 +265,11 @@ export default function HeroTransform({
     window.addEventListener("resize", onResize);
     return () => {
       cancelAnimationFrame(raf);
+      if (collapseTimer.current !== null) {
+        window.clearTimeout(collapseTimer.current);
+        collapseTimer.current = null;
+      }
+      collapseArmed.current = false;
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
     };
@@ -179,6 +284,20 @@ export default function HeroTransform({
     markedSeen.current = false;
     maxProgress.current = 0;
     rewindGuard.current = true;
+    // 畳み予約が残っていたら取り消す（再演中に畳まれないように）。
+    if (collapseTimer.current !== null) {
+      window.clearTimeout(collapseTimer.current);
+      collapseTimer.current = null;
+    }
+    collapseArmed.current = false;
+    // 畳んでいた高さを戻す（再演完了でまた畳まれる）。
+    // DOM のインラインスタイルも React の再描画で 240vh に戻るが、
+    // 先に消しておくと計測のタイミング差で古い高さを読まない。
+    collapsedRef.current = false;
+    setCollapsed(false);
+    if (scrollRef.current) {
+      scrollRef.current.style.height = "";
+    }
     setProgress(0);
     setMode("morph");
     requestAnimationFrame(() => {
@@ -219,7 +338,11 @@ export default function HeroTransform({
   const hintOpacity = 1 - phase(progress, 0, 0.15);
 
   return (
-    <div className="hero-scroll" ref={scrollRef} style={{ height: "240vh" }}>
+    <div
+      className="hero-scroll"
+      ref={scrollRef}
+      style={{ height: collapsed ? "100svh" : "240vh" }}
+    >
       <div className="hero-sticky" style={{ background: bg }}>
         <div
           className="hero-stage hero-stage--fes"
@@ -274,6 +397,11 @@ export default function HeroTransform({
         <div className="hero-meta" style={{ opacity: metaOpacity, color: "#f2f2ed" }}>
           <p className="dates">{dateLabel}</p>
           <p className="venue">{venue}</p>
+          {collapsed && (
+            <button type="button" className="hero-replay" onClick={replay}>
+              ロゴの変形をもう一度見る
+            </button>
+          )}
         </div>
         <span className="hero-scroll-hint" style={{ opacity: hintOpacity }}>
           SCROLL
