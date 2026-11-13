@@ -13,11 +13,14 @@ import "./HeroTransform.css";
  *
  * 作法:
  * - 自動再生ではなくスクロール駆動。スクロールすればそのまま下の情報へ行ける。
- * - 進捗は「現在の scrollY とヒーロー区間の形状」だけから決まる純粋な関数にする。
- *   scrollY が区間の開始位置以下なら進捗は必ず 0 で、計測値が一時的に
- *   おかしくなっても（total <= 0 等）進捗が進むことはない。
+ * - 変形は一方向。スクロール位置から求めた進捗を「これまでに到達した最大値」
+ *   で下限として保持し、上へスクロールしても巻き戻らない。完了（進捗 1）
+ *   したらその訪問の間は最終状態（黒背景＋recollage ロゴ）に固定される。
+ * - スクロール位置からの素の進捗は、scrollY が区間の開始位置以下なら必ず 0 で、
+ *   計測値が一時的に おかしくなっても（total <= 0 等）進捗が進むことはない。
+ *   初回表示はスクロールしない限り進まない（最大値の初期値は 0）。
  * - 「見た」記録（sessionStorage）は、実際にスクロールイベントが起きて
- *   進捗が末尾に達したときだけ書く。マウント直後やリサイズの再計算では書かない。
+ *   実効進捗が末尾に達したときだけ書く。マウント直後やリサイズの再計算では書かない。
  * - prefers-reduced-motion の端末では変形後の静止画。
  * - 2回目以降の訪問（同一セッション）では変形済みから始める。
  *   ロゴ下のボタンで変形をもう一度見られる。
@@ -59,10 +62,16 @@ export default function HeroTransform({
   // "morph" = 変形を見せる / "done" = 変形後の静止画（reduced-motion・再訪時）
   const [mode, setMode] = useState<"morph" | "done">("morph");
   const markedSeen = useRef(false);
+  // 一方向化のための到達最大進捗。実効進捗はこれを下回らない。
+  // replay のときだけ 0 に戻す。
+  const maxProgress = useRef(0);
   // replay 直後の巻き戻し中は「見た」を書かないためのガード。
   // done→morph の切り替え時にブラウザがスクロール位置を区間の末尾側へ
-  // 復元することがあり、その一瞬のスクロールイベントで誤記録されるのを防ぐ。
-  // 進捗が末尾未満に戻った時点で解除される。
+  // 復元（スクロールアンカリングでジャンプ）することがあり、そこから
+  // scrollIntoView のアニメーションが全区間をなぞって戻ってくる。
+  // その通過中のスクロールイベントで誤記録・誤ラッチしないよう、
+  // 進捗が開始位置付近（<= 0.02）まで戻った時点で解除する。
+  // ガード中は位置から進捗を進めることもしない（表示は最大値のまま）。
   const rewindGuard = useRef(false);
 
   useEffect(() => {
@@ -106,22 +115,35 @@ export default function HeroTransform({
     const update = (fromScroll: boolean) => {
       const g = measure();
       if (!g) return;
-      // 進捗は scrollY の純粋な関数。区間開始位置より上にいる限り必ず 0。
+      // スクロール位置からの素の進捗。区間開始位置より上にいる限り必ず 0。
       // total が取れない・縮退している場合は進めない（旧実装はここで 1 に
       // 倒していたため、計測が一瞬おかしくなるだけで変形が完了し、
       // さらに「見た」まで記録されて再訪扱いになる不具合があった）。
       const p =
         g.total > 0 ? clamp01((window.scrollY - g.docTop) / g.total) : 0;
-      setProgress(p);
-      if (fromScroll && rewindGuard.current && p < 0.98) {
-        rewindGuard.current = false;
+
+      if (rewindGuard.current) {
+        // replay 直後。スクロール位置の復元ジャンプや、開始位置へ戻る
+        // アニメーションの通過中の p では進捗を進めず・記録もしない。
+        // 解除条件は「末尾未満」ではなく開始位置付近（<= 0.02）まで
+        // 戻ったこと。通過の途中で解除すると、その通過値（例 0.97）が
+        // 一方向の最大値にラッチされて再演が最終状態で固まってしまう。
+        if (fromScroll && p <= 0.02) {
+          rewindGuard.current = false;
+        } else {
+          setProgress(maxProgress.current);
+          return;
+        }
       }
-      if (
-        fromScroll &&
-        !rewindGuard.current &&
-        p >= 0.98 &&
-        !markedSeen.current
-      ) {
+
+      // 一方向: 実効進捗は到達した最大値から下げない。上スクロールで
+      // 素の進捗が下がっても、表示は最大値のまま（完了後は最終状態に固定）。
+      if (p > maxProgress.current) {
+        maxProgress.current = p;
+      }
+      const effective = maxProgress.current;
+      setProgress(effective);
+      if (fromScroll && effective >= 0.98 && !markedSeen.current) {
         markedSeen.current = true;
         try {
           window.sessionStorage.setItem(STORAGE_KEY, "1");
@@ -155,6 +177,7 @@ export default function HeroTransform({
       /* 何もしない */
     }
     markedSeen.current = false;
+    maxProgress.current = 0;
     rewindGuard.current = true;
     setProgress(0);
     setMode("morph");
