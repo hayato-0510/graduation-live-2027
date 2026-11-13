@@ -28,6 +28,6 @@
 
 ### 未決定
 
-- ホスティング（Cloudflare Pages / Vercel / GitHub Pages）と独自ドメインの有無
+- 独自ドメインの有無（ホスティングは Cloudflare Pages に決定・移行済み 2026-11-13、本番 https://graduation-live-2027.pages.dev/）
 - タイトル・世界観（別途検討中）
 - 公開範囲: 現在 private。公開タイミングで public 化するかは別途決める
