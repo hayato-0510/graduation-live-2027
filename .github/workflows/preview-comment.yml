@@ -1,0 +1,37 @@
+name: Preview comment
+
+# D9: PR にプレビューURLを自動でコメントする。
+# デプロイ自体は Cloudflare Pages の Git 連携が担う。このワークフローは
+# 「ブランチ名から決まるプレビューURL」を PR コメントに1本だけ貼り、
+# push のたびに同じコメントを更新する（高専祭HPの作法に倣う）。
+# プレビューURLの形: https://<ブランチ名のスラッグ>.graduation-live-2027.pages.dev
+#   スラッグ = ブランチ名を小文字化し、英数字以外を - に置換したもの
+#   （例: docs/dev-flow-preview → docs-dev-flow-preview、実地で確認済み）
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  preview-comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post or update preview URL comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          slug=$(printf '%s' "$HEAD_REF" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g')
+          url="https://${slug}.graduation-live-2027.pages.dev"
+          now=$(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M')
+          body=$(printf '🔗 Preview: %s\n\ncommit `%s` / 更新 %s JST\n反映まで数分かかることがあります。開けない場合は少し待ってから再読み込みしてください。' \
+            "$url" "${HEAD_SHA:0:7}" "$now")
+          gh pr comment "$PR_NUMBER" --repo "$REPO" \
+            --edit-last --create-if-none \
+            --body "$body"
