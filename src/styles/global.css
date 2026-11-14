@@ -208,3 +208,335 @@ a {
 #formation .band-meta {
   white-space: nowrap;
 }
+
+/* --- Mock F: FORMATIONをコルクボード掲示板に --- */
+#formation .band-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(228px, 1fr));
+  gap: 30px 26px;
+  background-color: #b0824f;
+  background-image:
+    radial-gradient(rgba(0, 0, 0, 0.16) 1px, transparent 1.7px),
+    radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1.7px);
+  background-size:
+    9px 9px,
+    13px 13px;
+  background-position:
+    0 0,
+    4px 6px;
+  border: 16px solid #6f4f2e;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 0 3px #59391d,
+    inset 0 2px 22px rgba(0, 0, 0, 0.35),
+    0 12px 30px rgba(60, 40, 10, 0.18);
+  padding: 38px 30px;
+}
+#formation .band-slot {
+  position: relative;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fffdf4;
+  border: 1px solid #e7dec6;
+  border-radius: 2px;
+  box-shadow: 0 6px 14px rgba(50, 30, 5, 0.35);
+  padding: 22px 18px 16px;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+#formation .band-slot:nth-child(3n) {
+  transform: rotate(-1.7deg);
+}
+#formation .band-slot:nth-child(3n + 1) {
+  transform: rotate(1.3deg);
+}
+#formation .band-slot:nth-child(4n) {
+  transform: rotate(-0.6deg);
+}
+#formation .band-slot:hover {
+  transform: rotate(0deg) translateY(-5px) scale(1.03);
+  box-shadow: 0 14px 24px rgba(50, 30, 5, 0.4);
+  z-index: 2;
+}
+#formation .band-slot::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff9a86, #d8402a 58%, #9c2417);
+  box-shadow: 0 3px 4px rgba(40, 20, 0, 0.45);
+  transform: translateX(-50%);
+}
+#formation .band-slot:nth-child(4n)::before {
+  width: 76px;
+  height: 21px;
+  border-radius: 2px;
+  background: rgba(243, 231, 188, 0.88);
+  box-shadow: 0 1px 3px rgba(40, 20, 0, 0.25);
+  transform: translateX(-50%) rotate(-3deg);
+  top: -11px;
+}
+#formation .band-name {
+  font-size: 22px;
+}
+#formation .band-meta {
+  margin: 0;
+  text-align: left;
+  white-space: normal;
+}
+
+/* --- Mock G: 色テーマ固定「和紙×コルク」 --- */
+:root {
+  --bg: #f4efe2;
+  --bg-raised: #eae1cb;
+  --ink: #211d15;
+  --ink-dim: #6f6650;
+  --line: #d9cfb6;
+  --accent: #f4d21f;
+}
+body {
+  background-color: var(--bg);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.14' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.38 0 0 0 0 0.22 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23w)' opacity='0.35'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0.40 0 0 0 0 0.33 0 0 0 0 0.18 0 0 0 0.30 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.30'/%3E%3C/svg%3E");
+}
+/* 油絵のキャンバスみたいな粒子を全体に薄く */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+header {
+  background: rgba(244, 239, 226, 0.92) !important;
+}
+
+/* --- Mock H: 揺れ + collageの色と経年 --- */
+/* 紙片はピンの位置を支点に揺れる */
+#formation .band-slot {
+  --tilt: 0deg;
+  transform: rotate(var(--tilt));
+  transform-origin: 50% -12px;
+}
+#formation .band-slot:nth-child(3n) {
+  --tilt: -1.7deg;
+  transform: rotate(var(--tilt));
+}
+#formation .band-slot:nth-child(3n + 1) {
+  --tilt: 1.3deg;
+  transform: rotate(var(--tilt));
+}
+#formation .band-slot:nth-child(4n) {
+  --tilt: -0.6deg;
+  transform: rotate(var(--tilt));
+}
+@keyframes sway {
+  0% {
+    transform: rotate(var(--tilt));
+  }
+  18% {
+    transform: rotate(calc(var(--tilt) + 3deg));
+  }
+  42% {
+    transform: rotate(calc(var(--tilt) - 2.1deg));
+  }
+  65% {
+    transform: rotate(calc(var(--tilt) + 1.1deg));
+  }
+  84% {
+    transform: rotate(calc(var(--tilt) - 0.4deg));
+  }
+  100% {
+    transform: rotate(var(--tilt));
+  }
+}
+#formation .band-slot:hover,
+#formation .band-slot:active {
+  animation: sway 1.4s ease-out;
+  transform: rotate(var(--tilt));
+  box-shadow: 0 10px 18px rgba(50, 30, 5, 0.38);
+  z-index: 2;
+}
+/* 色の紙片をところどころ */
+#formation .band-slot:nth-child(6n) {
+  background: #fdf3c2;
+}
+#formation .band-slot:nth-child(7n) {
+  background: #e8edf2;
+}
+/* 経年: 紙片の隅が黒ずむ */
+#formation .band-slot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 90px 55px at 96% 100%,
+      rgba(74, 50, 14, 0.2),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 60px 40px at 0% 0%,
+      rgba(74, 50, 14, 0.1),
+      transparent 70%
+    );
+}
+/* 赤い絵の具の飛沫 */
+.cover-dates {
+  position: relative;
+}
+.cover-dates::after {
+  content: "";
+  position: absolute;
+  right: 148px;
+  top: -14px;
+  width: 150px;
+  height: 150px;
+  pointer-events: none;
+  opacity: 0.85;
+  transform: rotate(24deg);
+  background: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20200%20200'%3E%3Cg%20fill='%23bc3319'%3E%3Cpath%20d='M154%20100%20L132%20113%20L130%20130%20L116%20138%20L100%20158%20L68%20178%20L56%20144%20L66%20114%20L52%20100%20L68%2087%20L71%2071%20L81%2054%20L100%2065%20L115%2063%20L139%2061%20L148%2080%20Z'%20fill-opacity='0.8'/%3E%3Ccircle%20cx='182'%20cy='36'%20r='6'/%3E%3Ccircle%20cx='192'%20cy='86'%20r='3.5'/%3E%3Ccircle%20cx='16'%20cy='150'%20r='5'/%3E%3Ccircle%20cx='170'%20cy='176'%20r='4'/%3E%3Ccircle%20cx='30'%20cy='18'%20r='3.5'/%3E%3Ccircle%20cx='6'%20cy='80'%20r='2.6'/%3E%3Ccircle%20cx='120'%20cy='188'%20r='2.6'/%3E%3C/g%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+#formation .band-grid {
+  position: relative;
+}
+#formation .band-grid::after {
+  content: "";
+  position: absolute;
+  left: -24px;
+  bottom: -30px;
+  width: 190px;
+  height: 190px;
+  pointer-events: none;
+  opacity: 0.8;
+  transform: scaleX(-1) rotate(70deg);
+  background: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20200%20200'%3E%3Cg%20fill='%23bc3319'%3E%3Cpath%20d='M154%20100%20L132%20113%20L130%20130%20L116%20138%20L100%20158%20L68%20178%20L56%20144%20L66%20114%20L52%20100%20L68%2087%20L71%2071%20L81%2054%20L100%2065%20L115%2063%20L139%2061%20L148%2080%20Z'%20fill-opacity='0.8'/%3E%3Ccircle%20cx='182'%20cy='36'%20r='6'/%3E%3Ccircle%20cx='192'%20cy='86'%20r='3.5'/%3E%3Ccircle%20cx='16'%20cy='150'%20r='5'/%3E%3Ccircle%20cx='170'%20cy='176'%20r='4'/%3E%3Ccircle%20cx='30'%20cy='18'%20r='3.5'/%3E%3Ccircle%20cx='6'%20cy='80'%20r='2.6'/%3E%3Ccircle%20cx='120'%20cy='188'%20r='2.6'/%3E%3C/g%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+/* 和紙の隅の黒ずみ */
+#venue {
+  position: relative;
+}
+#venue::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 420px 200px at 100% 110%,
+    rgba(66, 46, 16, 0.16),
+    transparent 70%
+  );
+}
+
+/* --- Mock I: 飛沫と色を増やす --- */
+.hero-static {
+  position: relative;
+}
+.hero-static::after {
+  content: "";
+  position: absolute;
+  left: 3%;
+  bottom: -38px;
+  width: 96px;
+  height: 96px;
+  pointer-events: none;
+  opacity: 0.85;
+  transform: rotate(-18deg);
+  background: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20200%20200'%3E%3Cg%20fill='%232450A8'%3E%3Cpath%20d='M144%20100%20L136%20115%20L139%20139%20L114%20134%20L100%20151%20L68%20178%20L75%20125%20L54%20119%20L65%20100%20L56%2082%20L74%2074%20L86%2066%20L100%2052%20L123%2044%20L127%2073%20L138%2084%20Z'%20fill-opacity='0.8'/%3E%3Ccircle%20cx='182'%20cy='36'%20r='6'/%3E%3Ccircle%20cx='192'%20cy='86'%20r='3.5'/%3E%3Ccircle%20cx='16'%20cy='150'%20r='5'/%3E%3Ccircle%20cx='170'%20cy='176'%20r='4'/%3E%3Ccircle%20cx='30'%20cy='18'%20r='3.5'/%3E%3Ccircle%20cx='6'%20cy='80'%20r='2.6'/%3E%3Ccircle%20cx='120'%20cy='188'%20r='2.6'/%3E%3C/g%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+.cover-dates {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2026%20110'%3E%3Cg%20fill='%23bc3319'%3E%3Crect%20x='10'%20y='0'%20width='6'%20height='58'%20rx='3'/%3E%3Ccircle%20cx='13'%20cy='68'%20r='10'/%3E%3Ccircle%20cx='13'%20cy='92'%20r='4.5'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 205px top 0;
+  background-size: 26px 110px;
+}
+.cover-dates::before {
+  content: "";
+  position: absolute;
+  left: 41%;
+  top: -44px;
+  width: 104px;
+  height: 104px;
+  pointer-events: none;
+  opacity: 0.75;
+  transform: rotate(12deg);
+  background: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20200%20200'%3E%3Cg%20fill='%23D9A400'%3E%3Cpath%20d='M147%20100%20L137%20115%20L128%20128%20L116%20139%20L100%20158%20L68%20178%20L67%20133%20L48%20121%20L49%20100%20L41%2075%20L65%2065%20L82%2056%20L100%2046%20L116%2062%20L144%2056%20L142%2082%20Z'%20fill-opacity='0.8'/%3E%3Ccircle%20cx='182'%20cy='36'%20r='6'/%3E%3Ccircle%20cx='192'%20cy='86'%20r='3.5'/%3E%3Ccircle%20cx='16'%20cy='150'%20r='5'/%3E%3Ccircle%20cx='170'%20cy='176'%20r='4'/%3E%3Ccircle%20cx='30'%20cy='18'%20r='3.5'/%3E%3Ccircle%20cx='6'%20cy='80'%20r='2.6'/%3E%3Ccircle%20cx='120'%20cy='188'%20r='2.6'/%3E%3C/g%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+#about {
+  position: relative;
+}
+#about::after {
+  content: "";
+  position: absolute;
+  right: 4%;
+  top: 6px;
+  width: 108px;
+  height: 108px;
+  pointer-events: none;
+  opacity: 0.8;
+  transform: rotate(48deg);
+  background: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20200%20200'%3E%3Cg%20fill='%232450A8'%3E%3Cpath%20d='M144%20100%20L136%20115%20L139%20139%20L114%20134%20L100%20151%20L68%20178%20L75%20125%20L54%20119%20L65%20100%20L56%2082%20L74%2074%20L86%2066%20L100%2052%20L123%2044%20L127%2073%20L138%2084%20Z'%20fill-opacity='0.8'/%3E%3Ccircle%20cx='182'%20cy='36'%20r='6'/%3E%3Ccircle%20cx='192'%20cy='86'%20r='3.5'/%3E%3Ccircle%20cx='16'%20cy='150'%20r='5'/%3E%3Ccircle%20cx='170'%20cy='176'%20r='4'/%3E%3Ccircle%20cx='30'%20cy='18'%20r='3.5'/%3E%3Ccircle%20cx='6'%20cy='80'%20r='2.6'/%3E%3Ccircle%20cx='120'%20cy='188'%20r='2.6'/%3E%3C/g%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+#sequence {
+  position: relative;
+}
+#sequence::after {
+  content: "";
+  position: absolute;
+  right: -16px;
+  top: -28px;
+  width: 128px;
+  height: 128px;
+  pointer-events: none;
+  opacity: 0.9;
+  transform: rotate(15deg);
+  background: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20200%20200'%3E%3Cg%20fill='%23bc3319'%3E%3Cpath%20d='M154%20100%20L132%20113%20L130%20130%20L116%20138%20L100%20158%20L68%20178%20L56%20144%20L66%20114%20L52%20100%20L68%2087%20L71%2071%20L81%2054%20L100%2065%20L115%2063%20L139%2061%20L148%2080%20Z'%20fill-opacity='0.8'/%3E%3Ccircle%20cx='182'%20cy='36'%20r='6'/%3E%3Ccircle%20cx='192'%20cy='86'%20r='3.5'/%3E%3Ccircle%20cx='16'%20cy='150'%20r='5'/%3E%3Ccircle%20cx='170'%20cy='176'%20r='4'/%3E%3Ccircle%20cx='30'%20cy='18'%20r='3.5'/%3E%3Ccircle%20cx='6'%20cy='80'%20r='2.6'/%3E%3Ccircle%20cx='120'%20cy='188'%20r='2.6'/%3E%3C/g%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+#formation .band-grid::before {
+  content: "";
+  position: absolute;
+  right: -20px;
+  top: -28px;
+  width: 132px;
+  height: 132px;
+  pointer-events: none;
+  opacity: 0.85;
+  transform: rotate(-30deg);
+  z-index: 3;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20200%20200'%3E%3Cg%20fill='%232450A8'%3E%3Cpath%20d='M144%20100%20L136%20115%20L139%20139%20L114%20134%20L100%20151%20L68%20178%20L75%20125%20L54%20119%20L65%20100%20L56%2082%20L74%2074%20L86%2066%20L100%2052%20L123%2044%20L127%2073%20L138%2084%20Z'%20fill-opacity='0.8'/%3E%3Ccircle%20cx='182'%20cy='36'%20r='6'/%3E%3Ccircle%20cx='192'%20cy='86'%20r='3.5'/%3E%3Ccircle%20cx='16'%20cy='150'%20r='5'/%3E%3Ccircle%20cx='170'%20cy='176'%20r='4'/%3E%3Ccircle%20cx='30'%20cy='18'%20r='3.5'/%3E%3Ccircle%20cx='6'%20cy='80'%20r='2.6'/%3E%3Ccircle%20cx='120'%20cy='188'%20r='2.6'/%3E%3C/g%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+/* 色紙とピンの色を増やす */
+#formation .band-slot:nth-child(5n) {
+  background: #fdf3c2;
+}
+#formation .band-slot:nth-child(6n) {
+  background: #e8edf2;
+}
+#formation .band-slot:nth-child(11n) {
+  background: #f9e0d4;
+}
+#formation .band-slot:nth-child(5n)::before {
+  background: radial-gradient(circle at 35% 30%, #ffe97a, #d9a400 58%, #9c7400);
+}
+#formation .band-slot:nth-child(7n)::before {
+  background: radial-gradient(circle at 35% 30%, #8fb0ff, #2450a8 58%, #173a7d);
+}
+#formation .band-slot:nth-child(8n)::before {
+  background: rgba(250, 214, 120, 0.9);
+}
