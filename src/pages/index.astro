@@ -28,7 +28,7 @@ const summaryItems = [
 ---
 
 <BaseLayout>
-  <main id="top">
+  <main id="top" data-fes-logo={fesLogo.src}>
     <HeroTransform
       client:load
       fesLogoSrc={fesLogo.src}
@@ -36,6 +36,16 @@ const summaryItems = [
       dateLabel={site.dateLabel}
       venue={site.venue}
     />
+
+    {/* Mock D: 誌面の表紙みたいに日付を巨大タイポで置く */}
+    <div class="cover-dates" aria-hidden="true">
+      <span class="cd-num">03.06</span>
+      <span class="cd-day">SAT</span>
+      <span class="cd-dash">—</span>
+      <span class="cd-num">03.07</span>
+      <span class="cd-day">SUN</span>
+      <span class="cd-year">2027</span>
+    </div>
 
     {/* 要点バー: 開いてすぐ開催概要が分かるように。未定は未定と書く */}
     <section class="summary-bar" aria-label="開催概要">
@@ -237,4 +247,7 @@ const summaryItems = [
       margin: 0 0 6px;
     }
   </style>
+  <script>
+    import "../scripts/hero3d";
+  </script>
 </BaseLayout>

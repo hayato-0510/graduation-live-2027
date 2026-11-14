@@ -2,13 +2,13 @@
    地: ステージブラック / 文字: オフホワイト / 差し色: 黄色（現在位置とリンクだけに使う）
    紙白はファーストビューのロゴ変形の開始色としてだけ使う。 */
 :root {
-  --bg: #08090a;
-  --bg-raised: #101214;
+  --bg: #ecece5;
+  --bg-raised: #e0e0d7;
   --paper: #f8f8f8;
-  --ink: #f2f2ed;
-  --ink-dim: #b9bbb4;
+  --ink: #141518;
+  --ink-dim: #5a5c55;
   --accent: #f4d21f;
-  --line: #2a2d2f;
+  --line: #c6c6bb;
   --font-display: "Anton", "Bebas Neue", sans-serif;
   --font-label: "Bebas Neue", "Anton", sans-serif;
   --font-body:
@@ -88,4 +88,123 @@ a {
   html {
     scroll-behavior: auto;
   }
+}
+
+/* --- Mock D: エディトリアル/誌面型 --- */
+.cover-dates {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  border-top: 3px solid var(--ink);
+  border-bottom: 1px solid var(--line);
+  padding: 26px 4px 20px;
+  margin-top: 8px;
+  font-family: "Anton", sans-serif;
+  color: var(--ink);
+  line-height: 1;
+}
+.cd-num {
+  font-size: clamp(56px, 10vw, 118px);
+  letter-spacing: 0.01em;
+}
+.cd-day {
+  font-size: clamp(15px, 2vw, 22px);
+  color: #8f6b00;
+}
+.cd-dash {
+  font-size: clamp(30px, 5vw, 60px);
+  color: var(--ink-dim);
+}
+.cd-year {
+  margin-left: auto;
+  font-size: clamp(15px, 2vw, 22px);
+  color: var(--ink-dim);
+  letter-spacing: 0.3em;
+}
+.summary-bar {
+  border-bottom: 1px solid var(--line);
+}
+.section-head {
+  border-top: 2px solid var(--ink);
+  padding-top: 18px;
+}
+.section-head .en {
+  font-size: clamp(44px, 7vw, 76px);
+}
+/* FORMATION: カードをやめて誌面の目次みたいな行リストに */
+.band-grid {
+  display: block;
+}
+.band-slot {
+  display: flex;
+  align-items: baseline;
+  gap: 22px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  padding: 16px 4px;
+}
+.band-no {
+  font-size: 13px;
+  min-width: 2.2em;
+}
+.band-name {
+  font-size: clamp(21px, 3vw, 29px);
+}
+.band-meta {
+  margin-left: auto;
+  text-align: right;
+}
+.about-text {
+  font-size: 19px;
+  line-height: 2.05;
+  max-width: 36em;
+}
+/* SEQUENCEはCの黒パネルを合体 */
+#sequence {
+  background: #0b0c0d;
+  color: #f2f2ed;
+  border-radius: 6px;
+  padding: 44px 36px;
+}
+#sequence .section-head {
+  border-top-color: #f2f2ed;
+}
+#sequence .day-frame {
+  background: #101214;
+  border-color: #2a2d2f;
+}
+#sequence .tbd {
+  color: #b9bbb4;
+}
+
+/* --- Mock D fix: scoped stylesに勝つため #formation で強める --- */
+#formation .band-grid {
+  display: block;
+}
+#formation .band-slot {
+  display: flex;
+  align-items: baseline;
+  gap: 22px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  padding: 16px 4px;
+}
+#formation .band-name {
+  font-size: clamp(21px, 3vw, 29px);
+}
+#formation .band-meta {
+  margin-left: auto;
+  text-align: right;
+}
+#formation .band-slot {
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+#formation .band-meta {
+  white-space: nowrap;
 }
