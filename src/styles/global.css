@@ -540,3 +540,114 @@ header {
 #formation .band-slot:nth-child(8n)::before {
   background: rgba(250, 214, 120, 0.9);
 }
+
+/* --- Mock J: 飛沫の配置を整える + 黒のくすみ + スマホ最適化 --- */
+/* ルール: 飛沫は1セクション1つまで、隅に置く、文字に被せない */
+.hero-static::after {
+  display: none;
+}
+.cover-dates {
+  background-image: none;
+}
+.cover-dates::before {
+  display: none;
+}
+.cover-dates::after {
+  right: 118px;
+  top: 10px;
+  width: 118px;
+  height: 118px;
+}
+#about::after {
+  right: 2%;
+  top: auto;
+  bottom: -14px;
+  width: 84px;
+  height: 84px;
+  opacity: 0.65;
+}
+#formation .band-grid::before {
+  content: "";
+  position: absolute;
+  left: -30px;
+  bottom: -30px;
+  width: 280px;
+  height: 180px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(32, 22, 8, 0.38),
+    transparent 70%
+  );
+  transform: none;
+  opacity: 1;
+  z-index: 0;
+}
+#formation .band-grid::after {
+  left: auto;
+  right: -22px;
+  bottom: -26px;
+  width: 150px;
+  height: 150px;
+}
+#sequence::after {
+  right: -12px;
+  top: -20px;
+  width: 104px;
+  height: 104px;
+}
+/* 黒のくすみ: ページの端々に煤けた影 */
+body {
+  background-image:
+    radial-gradient(
+      ellipse 560px 300px at -6% 22%,
+      rgba(43, 33, 16, 0.13),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 520px 280px at 104% 68%,
+      rgba(43, 33, 16, 0.11),
+      transparent 70%
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.14' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.38 0 0 0 0 0.22 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23w)' opacity='0.35'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0.40 0 0 0 0 0.33 0 0 0 0 0.18 0 0 0 0.30 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.30'/%3E%3C/svg%3E");
+}
+/* スマホ: ボードを細く締めて紙片を大きく読ませる */
+@media (max-width: 640px) {
+  #formation .band-grid {
+    border-width: 8px;
+    padding: 20px 14px;
+    gap: 18px;
+    grid-template-columns: 1fr;
+    box-shadow:
+      inset 0 0 0 2px #59391d,
+      inset 0 2px 14px rgba(0, 0, 0, 0.3);
+  }
+  #formation .band-slot {
+    padding: 18px 16px 14px;
+  }
+  #formation .band-name {
+    font-size: 21px;
+  }
+  #formation .band-grid::after {
+    width: 104px;
+    height: 104px;
+    right: -14px;
+    bottom: -18px;
+  }
+  .cover-dates::after {
+    width: 88px;
+    height: 88px;
+    right: 54px;
+    top: 6px;
+  }
+  #about::after {
+    display: none;
+  }
+  #sequence::after {
+    width: 80px;
+    height: 80px;
+  }
+  #sequence {
+    padding: 30px 20px;
+  }
+}
