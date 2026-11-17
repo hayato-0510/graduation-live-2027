@@ -11,5 +11,5 @@
 
 ## 光岡春平（勉強中）
 
-- GitHub: Pay3pay3
+- GitHub: shunpei-0303
 - 担当: 勉強中
