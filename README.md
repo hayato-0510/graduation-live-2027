@@ -5,6 +5,8 @@
 
 本番: https://graduation-live-2027.pages.dev/ （Cloudflare Pages、URL は未告知）
 
+![サイトのトップ画面](docs/images/site-top.png)
+
 ## まず読むもの
 
 | 知りたいこと                           | ファイル                                                      |
