@@ -670,3 +670,127 @@ body {
     padding: 30px 20px;
   }
 }
+
+/* --- 統合調整: 和紙地＋FORMATION だけボード、日本語見出し --- */
+.section-head h2 {
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-weight: 700;
+  font-size: 31px;
+  letter-spacing: 0.08em;
+}
+#formation .band-grid {
+  background-color: #b0824f;
+  background-image: url("/cork.jpg");
+  background-size: 520px auto;
+}
+.band-slot {
+  background-color: #fbf7ea;
+}
+#formation .section-head {
+  background: #f5eeda;
+  border: 1px solid #e3d9be;
+  box-shadow: 0 6px 14px rgba(43, 26, 5, 0.18);
+  padding: 12px 20px;
+  transform: rotate(-0.4deg);
+}
+#sequence {
+  background: #efe7d2;
+  color: var(--ink);
+  border: 1px solid #d9cfb6;
+  box-shadow: 0 10px 24px rgba(43, 26, 5, 0.12);
+}
+#sequence .section-head {
+  border-bottom-color: var(--line);
+}
+#sequence .section-head .no {
+  color: #b98a00;
+}
+#sequence .day-frame {
+  border-color: #d9cfb6;
+  background: rgba(255, 253, 244, 0.55);
+}
+#sequence .day-frame h3 {
+  color: var(--ink);
+}
+#sequence .tbd {
+  color: var(--sub);
+}
+/* 隠しメモ */
+.egg-zone {
+  position: relative;
+  height: 96px;
+}
+.egg-msg {
+  position: absolute;
+  right: 18px;
+  top: 26px;
+  width: 190px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.7;
+  color: rgba(60, 38, 10, 0);
+  transform: rotate(-1.5deg);
+  transition: color 0.6s ease 0.3s;
+  pointer-events: none;
+}
+.egg-msg.shown {
+  color: rgba(60, 38, 10, 0.8);
+}
+.egg-slip {
+  position: absolute;
+  right: 52px;
+  top: 4px;
+  width: 122px;
+  padding: 17px 10px 11px;
+  background: #fffdf4;
+  border: 1px solid #e7dec6;
+  border-radius: 2px;
+  box-shadow: 0 5px 12px rgba(43, 26, 5, 0.3);
+  transform: rotate(2.5deg);
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+}
+.egg-pin {
+  position: absolute;
+  left: 50%;
+  top: -9px;
+  transform: translateX(-50%);
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffb3a3, #bc3319 62%, #8f2410);
+  box-shadow: 0 3px 4px rgba(43, 26, 5, 0.4);
+}
+.egg-slip-text {
+  display: block;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #6f6650;
+}
+@keyframes eggshake {
+  0%,
+  100% {
+    transform: rotate(2.5deg);
+  }
+  25% {
+    transform: rotate(0.4deg);
+  }
+  75% {
+    transform: rotate(4.6deg);
+  }
+}
+.egg-slip.shake {
+  animation: eggshake 0.18s ease;
+}
+@keyframes eggfall {
+  to {
+    transform: translateY(150px) rotate(18deg);
+    opacity: 0;
+  }
+}
+.egg-slip.fallen {
+  animation: eggfall 0.8s cubic-bezier(0.5, 0, 0.8, 0.4) forwards;
+  pointer-events: none;
+}

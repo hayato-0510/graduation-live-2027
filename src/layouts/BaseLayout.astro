@@ -34,9 +34,9 @@ const pageDescription =
         <span class="re">re</span>collage
       </a>
       <nav class="site-nav" aria-label="セクション">
-        <a href="#formation">FORMATION</a>
-        <a href="#sequence">SEQUENCE</a>
-        <a href="#venue">VENUE</a>
+        <a href="#formation">出演バンド</a>
+        <a href="#sequence">タイムテーブル</a>
+        <a href="#venue">会場</a>
       </nav>
     </header>
 
@@ -121,5 +121,23 @@ const pageDescription =
         margin: 4px 0;
       }
     </style>
+    <script is:inline>
+      (function () {
+        var slip = document.getElementById("egg-slip");
+        if (slip) {
+          var n = 0;
+          slip.addEventListener("click", function () {
+            n++;
+            slip.classList.remove("shake");
+            void slip.offsetWidth;
+            slip.classList.add("shake");
+            if (n >= 5) {
+              slip.classList.add("fallen");
+              document.getElementById("egg-msg").classList.add("shown");
+            }
+          });
+        }
+      })();
+    </script>
   </body>
 </html>

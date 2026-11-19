@@ -2,61 +2,35 @@ import { useEffect, useRef, useState } from "react";
 import "./HeroTransform.css";
 
 /**
- * ファーストビューのロゴ変形（簡易版）。
+ * ファーストビューのロゴ変形（タップ駆動版）。
  *
- * 高専祭の collage ロゴを起点に、スクロールに連動して
- *  (a) ロゴが横方向の帯（6分割）に裂けて各帯が横にずれる
- *  (b) 背景が紙白 → ステージブラックへ反転し、色が抜けて黄色だけ残る方向へ寄せる
- *  (c) 最後に recollage ロゴ（E2）へ切り替わって固定される
- * という流れを通すための実装。世界観シートの段階表現のうち、
- * 装飾だけ先に崩す・文字が整列し直す、といった細部は割り切っている（PR本文参照）。
+ * 通常は高専祭の collage ロゴが静止して表示される。ロゴを
+ * タップ／クリックした人だけ、帯に裂けて recollage ロゴへ
+ * 組み替わるアニメーション（約1.9秒）が再生される。
+ * 気づいた人だけ変わる、隠し要素としての位置づけ。
  *
- * 作法:
- * - 自動再生ではなくスクロール駆動。スクロールすればそのまま下の情報へ行ける。
- * - 変形は一方向。スクロール位置から求めた進捗を「これまでに到達した最大値」
- *   で下限として保持し、上へスクロールしても巻き戻らない。完了（進捗 1）
- *   したらその訪問の間は最終状態（黒背景＋recollage ロゴ）に固定される。
- * - 完了したら、変形用に確保していた余分な高さ（240vh のうち sticky の
- *   1画面分を超える分）を畳み、ヒーローを1画面分だけにする。長い区間が
- *   残ると、変形後もその分だけ「死んだスクロール距離」がページに残って
- *   しまうため。畳むときは減った分だけスクロール位置を補正し、下の
- *   コンテンツの見た目が跳ねないようにする。途中（進捗 < 1）では畳まない。
- *   再演（replay）では高さを元に戻し、再演完了で再び畳む。再訪・
- *   reduced-motion の静止画（done モード）は最初から1画面分の高さ。
- *   畳むタイミングは「完了してからスクロール位置が安定した時点」に
- *   遅らせる。サイト全体に scroll-behavior: smooth が効いているため、
- *   完了した瞬間に畳んで位置補正の scrollTo を打つと、アンカーリンクの
- *   スムーズスクロールの途中通過で発火して遷移をキャンセルしてしまう。
- *   そこで scrollY をポーリングし、位置が安定したことを確認してから
- *   高さ変更＋補正を一括で行う。スクロールイベントの発火間隔は
- *   スムーズスクロール中に空くことがあるので、イベントのデバウンスでは
- *   通過途中の発火を防ぎきれない、というのがポーリングにする理由。
- * - スクロール位置からの素の進捗は、scrollY が区間の開始位置以下なら必ず 0 で、
- *   計測値が一時的に おかしくなっても（total <= 0 等）進捗が進むことはない。
- *   初回表示はスクロールしない限り進まない（最大値の初期値は 0）。
- * - 「見た」記録（sessionStorage）は、実際にスクロールイベントが起きて
- *   実効進捗が末尾に達したときだけ書く。マウント直後やリサイズの再計算では書かない。
+ * - 変形は一方向。完了したらそのセッションの間は最終状態に
+ *   固定される（sessionStorage）。再演の手段は置かない。
+ * - 開催の約1.5週間前（2027-02-24）以降は、最初から
+ *   recollage ロゴを常時表示する。
  * - prefers-reduced-motion の端末では変形後の静止画。
- * - 2回目以降の訪問（同一セッション）では変形済みから始める。
- *   ロゴ下のボタンで変形をもう一度見られる。
  */
 
 const SLICES = 6;
 const STORAGE_KEY = "recollage-hero-seen";
-
-const PAPER: [number, number, number] = [248, 248, 248];
-const BLACK: [number, number, number] = [8, 9, 10];
+const LIVE_LOGO_DATE = "2027-02-24T00:00:00+09:00";
+const DURATION = 1900;
 
 function clamp01(v: number): number {
   return Math.min(1, Math.max(0, v));
 }
 
-function mix(a: number, b: number, t: number): number {
-  return Math.round(a + (b - a) * t);
-}
-
 function phase(progress: number, from: number, to: number): number {
   return clamp01((progress - from) / (to - from));
+}
+
+function easeInOut(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
 interface Props {
@@ -66,50 +40,19 @@ interface Props {
   venue: string;
 }
 
+type Mode = "fes" | "anim" | "done";
+
 export default function HeroTransform({
   fesLogoSrc,
   recollageLogoSrc,
   dateLabel,
   venue,
 }: Props) {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [mode, setMode] = useState<Mode>("fes");
   const [progress, setProgress] = useState(0);
-  // "morph" = 変形を見せる / "done" = 変形後の静止画（reduced-motion・再訪時）
-  const [mode, setMode] = useState<"morph" | "done">("morph");
-  const markedSeen = useRef(false);
-  // 一方向化のための到達最大進捗。実効進捗はこれを下回らない。
-  // replay のときだけ 0 に戻す。
-  const maxProgress = useRef(0);
-  // replay 直後の巻き戻し中は「見た」を書かないためのガード。
-  // done→morph の切り替え時にブラウザがスクロール位置を区間の末尾側へ
-  // 復元（スクロールアンカリングでジャンプ）することがあり、そこから
-  // scrollIntoView のアニメーションが全区間をなぞって戻ってくる。
-  // その通過中のスクロールイベントで誤記録・誤ラッチしないよう、
-  // 進捗が開始位置付近（<= 0.02）まで戻った時点で解除する。
-  // ガード中は位置から進捗を進めることもしない（表示は最大値のまま）。
-  const rewindGuard = useRef(false);
-  // 変形完了後に区間の余分な高さを畳んだかどうか。
-  // ref は update() 内の同期判定用、state は JSX の height 切り替え用。
-  const collapsedRef = useRef(false);
-  const [collapsed, setCollapsed] = useState(false);
-  // 畳み予約（スクロール位置の安定待ち）のタイマーとポーリング状態。
-  // replay やアンマウントで解除する。
-  const collapseTimer = useRef<number | null>(null);
-  const collapseArmed = useRef(false);
-  const collapseLastY = useRef(0);
-  const collapseStable = useRef(0);
+  const rafRef = useRef(0);
 
   useEffect(() => {
-    // ブラウザのスクロールアンカリングを切る。フラグメント遷移直後は
-    // 遷移先要素がアンカーとして保持され、畳みで文書高さが変わると
-    // アンカリング側も位置補正を行うため、自前の補正と二重に効いて
-    // スクロール位置が補正量の2倍ずれる（実測で確認）。このページで
-    // 文書高さを変えるのはヒーローの畳みだけで、その補正は自前で
-    // 行うので、アンカリングはマウント中ずっと不要。
-    const rootEl = document.documentElement;
-    const prevOverflowAnchor = rootEl.style.overflowAnchor;
-    rootEl.style.overflowAnchor = "none";
-
     const reduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -119,190 +62,35 @@ export default function HeroTransform({
     } catch {
       seen = false;
     }
-    if (reduced || seen) {
+    const livePeriod = new Date() >= new Date(LIVE_LOGO_DATE);
+    if (reduced || seen || livePeriod) {
+      setProgress(1);
       setMode("done");
     }
-    return () => {
-      rootEl.style.overflowAnchor = prevOverflowAnchor;
-    };
+    return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
-  useEffect(() => {
-    if (mode !== "morph") return;
-    let raf = 0;
-
-    // ヒーロー区間の形状: ドキュメント先頭から区間開始までの距離と、
-    // スクロールで進捗が 0→1 になるまでの移動量。
-    // ビューポート側の高さは window.innerHeight ではなく sticky 要素自身の
-    // 実高（100svh）で取る。ツールバーの出入り等で innerHeight が揺れても
-    // total が縮んで進捗が水増しされることがないようにするため。
-    const measure = () => {
-      const el = scrollRef.current;
-      if (!el) return null;
-      const rect = el.getBoundingClientRect();
-      const docTop = rect.top + window.scrollY;
-      const sticky = el.firstElementChild as HTMLElement | null;
-      const viewH = sticky?.offsetHeight || window.innerHeight;
-      const total = el.offsetHeight - viewH;
-      return { docTop, total };
-    };
-
-    // 余分な高さを実際に畳む。スクロールが静止してから呼ばれる前提で、
-    // その時点の形状を取り直し、高さ変更＋スクロール位置補正を一括で行う。
-    // 補正の scrollTo は behavior: "instant" で即時に寄せる
-    // （サイト全体の scroll-behavior: smooth に任せると、補正自体が
-    // アニメーションになって通過点の位置がずれる）。
-    const doCollapse = () => {
-      collapseTimer.current = null;
-      collapseArmed.current = false;
-      if (collapsedRef.current) return;
-      const g = measure();
-      const el = scrollRef.current;
-      if (!g || !el) return;
-      collapsedRef.current = true;
-      if (g.total > 0) {
-        el.style.height = "100svh";
-        // 高さ変更のレイアウトを確定させてからスクロール位置を補正する
-        void el.offsetHeight;
-        const y = window.scrollY;
-        const ny = Math.max(0, y - g.total);
-        if (ny !== y) {
-          window.scrollTo({ top: ny, behavior: "instant" });
-        }
-      }
-      setCollapsed(true);
-    };
-
-    // 畳みの予約。scrollY を 100ms 間隔でポーリングし、位置が
-    // 連続して安定（2回 = 約200ms 以上不変）したら畳む。スムーズ
-    // スクロールの通過中は位置が変わり続けるため発火しない。
-    const pollStable = () => {
-      collapseTimer.current = null;
-      if (collapsedRef.current || !collapseArmed.current) return;
-      const y = window.scrollY;
-      if (y === collapseLastY.current) {
-        collapseStable.current += 1;
+  const play = () => {
+    if (mode === "anim") return;
+    setMode("anim");
+    setProgress(0);
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = clamp01((now - start) / DURATION);
+      setProgress(easeInOut(t));
+      if (t < 1) {
+        rafRef.current = requestAnimationFrame(tick);
       } else {
-        collapseStable.current = 0;
-        collapseLastY.current = y;
-      }
-      if (collapseStable.current >= 2) {
-        doCollapse();
-        return;
-      }
-      collapseTimer.current = window.setTimeout(pollStable, 100);
-    };
-
-    const scheduleCollapse = () => {
-      if (collapsedRef.current || collapseArmed.current) return;
-      collapseArmed.current = true;
-      collapseLastY.current = window.scrollY;
-      collapseStable.current = 0;
-      collapseTimer.current = window.setTimeout(pollStable, 100);
-    };
-
-    // fromScroll: 本物のスクロールイベント経由かどうか。
-    // 「見た」記録はスクロール経由で末尾に達したときだけ書く
-    // （マウント・リサイズの再計算で誤発火させない）。
-    const update = (fromScroll: boolean) => {
-      const g = measure();
-      if (!g) return;
-      // スクロール位置からの素の進捗。区間開始位置より上にいる限り必ず 0。
-      // total が取れない・縮退している場合は進めない（旧実装はここで 1 に
-      // 倒していたため、計測が一瞬おかしくなるだけで変形が完了し、
-      // さらに「見た」まで記録されて再訪扱いになる不具合があった）。
-      const p =
-        g.total > 0 ? clamp01((window.scrollY - g.docTop) / g.total) : 0;
-
-      if (rewindGuard.current) {
-        // replay 直後。スクロール位置の復元ジャンプや、開始位置へ戻る
-        // アニメーションの通過中の p では進捗を進めず・記録もしない。
-        // 解除条件は「末尾未満」ではなく開始位置付近（<= 0.02）まで
-        // 戻ったこと。通過の途中で解除すると、その通過値（例 0.97）が
-        // 一方向の最大値にラッチされて再演が最終状態で固まってしまう。
-        if (fromScroll && p <= 0.02) {
-          rewindGuard.current = false;
-        } else {
-          setProgress(maxProgress.current);
-          return;
-        }
-      }
-
-      // 一方向: 実効進捗は到達した最大値から下げない。上スクロールで
-      // 素の進捗が下がっても、表示は最大値のまま（完了後は最終状態に固定）。
-      if (p > maxProgress.current) {
-        maxProgress.current = p;
-      }
-      const effective = maxProgress.current;
-      setProgress(effective);
-      if (fromScroll && effective >= 0.98 && !markedSeen.current) {
-        markedSeen.current = true;
+        setProgress(1);
+        setMode("done");
         try {
           window.sessionStorage.setItem(STORAGE_KEY, "1");
         } catch {
           /* sessionStorage が使えない環境では何もしない */
         }
       }
-
-      // 変形が完了したら、余分な高さを畳む予約をする。即時に畳まず
-      // スクロールが静止してから実行する（理由は冒頭コメント参照）。
-      // 区間は 240vh あるが sticky は 1画面分しかないため、完了後も
-      // そのままにすると (区間高 − 1画面分) の死んだスクロール距離が残る。
-      if (effective >= 1) {
-        scheduleCollapse();
-      }
     };
-
-    const schedule = (fromScroll: boolean) => () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => update(fromScroll));
-    };
-    const onScroll = schedule(true);
-    const onResize = schedule(false);
-
-    update(false);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onResize);
-    return () => {
-      cancelAnimationFrame(raf);
-      if (collapseTimer.current !== null) {
-        window.clearTimeout(collapseTimer.current);
-        collapseTimer.current = null;
-      }
-      collapseArmed.current = false;
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onResize);
-    };
-  }, [mode]);
-
-  const replay = () => {
-    try {
-      window.sessionStorage.removeItem(STORAGE_KEY);
-    } catch {
-      /* 何もしない */
-    }
-    markedSeen.current = false;
-    maxProgress.current = 0;
-    rewindGuard.current = true;
-    // 畳み予約が残っていたら取り消す（再演中に畳まれないように）。
-    if (collapseTimer.current !== null) {
-      window.clearTimeout(collapseTimer.current);
-      collapseTimer.current = null;
-    }
-    collapseArmed.current = false;
-    // 畳んでいた高さを戻す（再演完了でまた畳まれる）。
-    // DOM のインラインスタイルも React の再描画で 240vh に戻るが、
-    // 先に消しておくと計測のタイミング差で古い高さを読まない。
-    collapsedRef.current = false;
-    setCollapsed(false);
-    if (scrollRef.current) {
-      scrollRef.current.style.height = "";
-    }
-    setProgress(0);
-    setMode("morph");
-    requestAnimationFrame(() => {
-      scrollRef.current?.scrollIntoView({ block: "start" });
-    });
+    rafRef.current = requestAnimationFrame(tick);
   };
 
   if (mode === "done") {
@@ -319,17 +107,11 @@ export default function HeroTransform({
         <div className="hero-meta" style={{ opacity: 1 }}>
           <p className="dates">{dateLabel}</p>
           <p className="venue">{venue}</p>
-          <button type="button" className="hero-replay" onClick={replay}>
-            ロゴの変形をもう一度見る
-          </button>
         </div>
       </section>
     );
   }
 
-  // 背景: 紙白 → ステージブラック（0.30〜0.78 で反転）
-  const invert = phase(progress, 0.3, 0.78);
-  const bg = `rgb(${mix(PAPER[0], BLACK[0], invert)}, ${mix(PAPER[1], BLACK[1], invert)}, ${mix(PAPER[2], BLACK[2], invert)})`;
   // 裂けの進行（0〜0.55）と色抜け
   const tear = phase(progress, 0, 0.55);
   const saturate = 1 - 0.9 * phase(progress, 0.35, 0.75);
@@ -338,81 +120,75 @@ export default function HeroTransform({
   const finalOpacity = phase(progress, 0.62, 0.92);
   const finalShift = (1 - finalOpacity) * 36;
   const metaOpacity = phase(progress, 0.8, 0.97);
-  const hintOpacity = 1 - phase(progress, 0, 0.15);
 
   return (
-    <div
-      className="hero-scroll"
-      ref={scrollRef}
-      style={{ height: collapsed ? "100svh" : "240vh" }}
-    >
-      <div className="hero-sticky" style={{ background: bg }}>
+    <section className="hero-static" aria-label="recollage">
+      <div
+        className="hero-stage hero-stage--fes"
+        role="button"
+        tabIndex={0}
+        aria-label="ロゴをタップすると変形します"
+        onClick={play}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            play();
+          }
+        }}
+        style={{ cursor: mode === "fes" ? "pointer" : "default" }}
+      >
+        {/* height:100% が無いとラッパーの高さが 0 になり、%指定の
+            スライスと画像が全部潰れて collage ロゴが描画されない */}
         <div
-          className="hero-stage hero-stage--fes"
-          role="img"
-          aria-label="高専祭 collage ロゴが recollage ロゴへ組み替わる"
+          style={{
+            opacity: fesOpacity,
+            filter: `saturate(${saturate})`,
+            height: "100%",
+          }}
         >
-          {/* height:100% が無いとラッパーの高さが 0 になり、%指定の
-              スライスと画像が全部潰れて collage ロゴが描画されない */}
-          <div
-            style={{
-              opacity: fesOpacity,
-              filter: `saturate(${saturate})`,
-              height: "100%",
-            }}
-          >
-            {Array.from({ length: SLICES }, (_, i) => {
-              const dir = i % 2 === 0 ? -1 : 1;
-              const mag = 16 + ((i * 37) % 44);
-              const shift = dir * mag * tear;
-              return (
-                <div
-                  key={i}
-                  className="hero-slice"
-                  style={{
-                    height: `${100 / SLICES}%`,
-                    transform: `translateX(${shift}px)`,
-                  }}
-                >
-                  <img
-                    src={fesLogoSrc}
-                    alt=""
-                    style={{ top: `${-i * 100}%` }}
-                    draggable={false}
-                  />
-                </div>
-              );
-            })}
-          </div>
-          <div
-            className="hero-final-logo"
-            style={{
-              opacity: finalOpacity,
-              transform: `translateX(${finalShift}px)`,
-              aspectRatio: "1835 / 760",
-              top: "12%",
-              bottom: "12%",
-            }}
-          >
-            <img src={recollageLogoSrc} alt="" draggable={false} />
-          </div>
+          {Array.from({ length: SLICES }, (_, i) => {
+            const dir = i % 2 === 0 ? -1 : 1;
+            const mag = 16 + ((i * 37) % 44);
+            const shift = dir * mag * tear;
+            return (
+              <div
+                key={i}
+                className="hero-slice"
+                style={{
+                  height: `${100 / SLICES}%`,
+                  transform: `translateX(${shift}px)`,
+                }}
+              >
+                <img
+                  src={fesLogoSrc}
+                  alt=""
+                  style={{ top: `${-i * 100}%` }}
+                  draggable={false}
+                />
+              </div>
+            );
+          })}
         </div>
         <div
-          className="hero-meta"
-          style={{ opacity: metaOpacity, color: "#f2f2ed" }}
+          className="hero-final-logo"
+          style={{
+            opacity: finalOpacity,
+            transform: `translateX(${finalShift}px)`,
+            aspectRatio: "1835 / 760",
+            top: "12%",
+            bottom: "12%",
+          }}
         >
-          <p className="dates">{dateLabel}</p>
-          <p className="venue">{venue}</p>
-          {collapsed && (
-            <button type="button" className="hero-replay" onClick={replay}>
-              ロゴの変形をもう一度見る
-            </button>
-          )}
+          <img src={recollageLogoSrc} alt="" draggable={false} />
         </div>
-        <span className="hero-scroll-hint" style={{ opacity: hintOpacity }}>
-          SCROLL
-        </span>
       </div>
-    </div>
+      <div
+        className="hero-meta"
+        style={{ opacity: metaOpacity, color: "#211D15" }}
+      >
+        <p className="dates">{dateLabel}</p>
+        <p className="venue">{venue}</p>
+      </div>
+    </section>
   );
 }

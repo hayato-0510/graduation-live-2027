@@ -5,7 +5,7 @@ import site from "../data/site.json";
 import bandsData from "../data/bands.json";
 import timetable from "../data/timetable.json";
 import fesLogo from "../assets/fes-logo.png";
-import recollageLogo from "../assets/recollage-logo.png";
+import recollageLogo from "../assets/recollage-logo-light.png";
 
 interface Band {
   name: string;
@@ -17,7 +17,7 @@ interface Band {
 const bands = bandsData.bands as Band[];
 const pad2 = (n: number) => String(n).padStart(2, "0");
 const dayLabel = (day: string | null) =>
-  day === "day1" ? "3/6 SAT" : day === "day2" ? "3/7 SUN" : "出演日 未定";
+  day === "day1" ? "3/6（土）" : day === "day2" ? "3/7（日）" : "出演日 未定";
 
 const summaryItems = [
   { label: "日程", value: site.dateLabel },
@@ -40,10 +40,10 @@ const summaryItems = [
     {/* Mock D: 誌面の表紙みたいに日付を巨大タイポで置く */}
     <div class="cover-dates" aria-hidden="true">
       <span class="cd-num">03.06</span>
-      <span class="cd-day">SAT</span>
+      <span class="cd-day">土</span>
       <span class="cd-dash">—</span>
       <span class="cd-num">03.07</span>
-      <span class="cd-day">SUN</span>
+      <span class="cd-day">日</span>
       <span class="cd-year">2027</span>
     </div>
 
@@ -62,26 +62,30 @@ const summaryItems = [
     </section>
 
     {/* 00 / RE:NOTE — About */}
-    <section class="section" id="about">
-      <div class="section-head">
-        <span class="no">00</span>
-        <h2>RE:NOTE</h2>
-        <span class="jp">このライブについて</span>
-      </div>
-      <p class="about-text">
-        高専祭の collage
-        は、異なる断片が輪郭を残したまま重なった一枚だった。卒業ライブの
-        recollage
-        は、それを貼り直すことではない。祭りの後に日常へ戻った人と音の編成を、卒業前に一度だけ組み直し、平面ではなく時間の上に並べること。演奏が終わればその編成は残らないけれど、2日間だけ確かに完成する。
-      </p>
-    </section>
 
     {/* 01 / FORMATION */}
     <section class="section" id="formation">
       <div class="section-head">
         <span class="no">01</span>
-        <h2>FORMATION</h2>
-        <span class="jp">出演バンド</span>
+        <h2>出演バンド</h2>
+      </div>
+      <div class="egg-zone">
+        <p class="egg-msg" id="egg-msg">
+          見つけたね。2027年3月6日（土）・7日（日）、サウンドステージで会おう
+        </p>
+        <button
+          class="egg-slip"
+          id="egg-slip"
+          type="button"
+          aria-label="小さなメモ"
+        >
+          <span class="egg-pin" aria-hidden="true"></span>
+          <span class="egg-slip-text">
+            メモ：このピンは
+            <br />
+            何回も押すな
+          </span>
+        </button>
       </div>
       <div class="band-grid">
         {bands.map((band, i) => (
@@ -100,8 +104,7 @@ const summaryItems = [
     <section class="section" id="sequence">
       <div class="section-head">
         <span class="no">02</span>
-        <h2>SEQUENCE</h2>
-        <span class="jp">タイムテーブル</span>
+        <h2>タイムテーブル</h2>
       </div>
       <div class="day-frames">
         {[timetable.day1, timetable.day2].map((day) => (
@@ -123,8 +126,7 @@ const summaryItems = [
     <section class="section" id="venue">
       <div class="section-head">
         <span class="no">03</span>
-        <h2>VENUE</h2>
-        <span class="jp">会場</span>
+        <h2>会場</h2>
       </div>
       <p class="venue-name">{site.venue}</p>
       <p class="tbd">アクセスなどの詳細は、決まり次第ここに載せます。</p>
