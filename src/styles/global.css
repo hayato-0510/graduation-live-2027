@@ -899,3 +899,62 @@ html[data-phase="night"] #dot-clock {
   animation: eggfall 0.8s cubic-bezier(0.5, 0, 0.8, 0.4) forwards;
   pointer-events: none;
 }
+
+/* --- Mock K3: 日本語主体・黒と白のコントラスト緩和 --- */
+.section-head h2 {
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-weight: 700;
+  font-size: 31px;
+  letter-spacing: 0.08em;
+}
+/* シートと紙片の白を落とす */
+.hero-static,
+.cover-dates,
+.summary-bar,
+main .section {
+  background-color: #f5eeda;
+}
+.band-slot {
+  background-color: #fbf7ea;
+}
+/* FORMATION の見出しは紙タグに乗せる */
+#formation .section-head {
+  background: #f5eeda;
+  border: 1px solid #e3d9be;
+  border-bottom: 1px solid #e3d9be;
+  box-shadow: 0 6px 14px rgba(43, 26, 5, 0.3);
+  padding: 12px 20px;
+  transform: rotate(-0.4deg);
+}
+/* SEQUENCE は紙シートに戻し、黒は時計の帯だけにする */
+#sequence {
+  background: #f5eeda;
+  color: var(--ink);
+}
+#sequence .section-head {
+  border-bottom-color: var(--line);
+}
+#sequence .section-head .no {
+  color: #b98a00;
+}
+#sequence .day-frame {
+  border-color: #d9cfb6;
+}
+#sequence .day-frame h3 {
+  color: var(--ink);
+}
+#sequence .tbd {
+  color: var(--sub);
+}
+.live-clock {
+  background: #0b0c0d;
+  border-radius: 8px;
+  padding: 16px 22px;
+  box-shadow: 0 8px 18px rgba(43, 26, 5, 0.35);
+}
+.live-clock-label {
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+}
