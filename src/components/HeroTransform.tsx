@@ -45,7 +45,7 @@ const SLICES = 6;
 const STORAGE_KEY = "recollage-hero-seen";
 
 const PAPER: [number, number, number] = [248, 248, 248];
-const BLACK: [number, number, number] = [8, 9, 10];
+const BLACK: [number, number, number] = [244, 239, 226]; // 終了色はステージブラックではなく和紙（明色デザインに合わせる）
 
 function clamp01(v: number): number {
   return Math.min(1, Math.max(0, v));
@@ -399,7 +399,7 @@ export default function HeroTransform({
         </div>
         <div
           className="hero-meta"
-          style={{ opacity: metaOpacity, color: "#f2f2ed" }}
+          style={{ opacity: metaOpacity, color: "#211D15" }}
         >
           <p className="dates">{dateLabel}</p>
           <p className="venue">{venue}</p>
