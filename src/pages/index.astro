@@ -83,6 +83,24 @@ const summaryItems = [
         <h2>FORMATION</h2>
         <span class="jp">出演バンド</span>
       </div>
+      <div class="egg-zone">
+        <p class="egg-msg" id="egg-msg">
+          見つけたね。2027.03.06 SAT - 03.07 SUN、サウンドステージで会おう
+        </p>
+        <button
+          class="egg-slip"
+          id="egg-slip"
+          type="button"
+          aria-label="小さなメモ"
+        >
+          <span class="egg-pin" aria-hidden="true"></span>
+          <span class="egg-slip-text">
+            メモ：このピンは
+            <br />
+            何回も押すな
+          </span>
+        </button>
+      </div>
       <div class="band-grid">
         {bands.map((band, i) => (
           <article class="band-slot">
@@ -102,6 +120,16 @@ const summaryItems = [
         <span class="no">02</span>
         <h2>SEQUENCE</h2>
         <span class="jp">タイムテーブル</span>
+      </div>
+      <div class="live-clock">
+        <span class="live-clock-label">NOW</span>
+        <canvas
+          id="dot-clock"
+          width="460"
+          height="92"
+          role="img"
+          aria-label="現在時刻"
+        ></canvas>
       </div>
       <div class="day-frames">
         {[timetable.day1, timetable.day2].map((day) => (
