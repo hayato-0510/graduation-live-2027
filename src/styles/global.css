@@ -678,7 +678,7 @@ body {
   font-size: 31px;
   letter-spacing: 0.08em;
 }
-.band-grid {
+#formation .band-grid {
   background-color: #b0824f;
   background-image: url("/cork.jpg");
   background-size: 520px auto;
