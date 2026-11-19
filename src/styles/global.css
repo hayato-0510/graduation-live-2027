@@ -958,3 +958,6 @@ main .section {
   font-weight: 700;
   letter-spacing: 0.24em;
 }
+#sequence .day-frame {
+  background: rgba(255, 253, 244, 0.55);
+}
