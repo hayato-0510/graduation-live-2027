@@ -106,16 +106,6 @@ const summaryItems = [
         <span class="no">02</span>
         <h2>タイムテーブル</h2>
       </div>
-      <div class="live-clock">
-        <span class="live-clock-label">現在時刻</span>
-        <canvas
-          id="dot-clock"
-          width="460"
-          height="92"
-          role="img"
-          aria-label="現在時刻"
-        ></canvas>
-      </div>
       <div class="day-frames">
         {[timetable.day1, timetable.day2].map((day) => (
           <div class="day-frame">

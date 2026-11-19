@@ -671,156 +671,51 @@ body {
   }
 }
 
-/* --- Mock K: サイト全体を1枚の掲示板にする --- */
-body {
+/* --- 統合調整: 和紙地＋FORMATION だけボード、日本語見出し --- */
+.section-head h2 {
+  font-family: "Zen Kaku Gothic New", sans-serif;
+  font-weight: 700;
+  font-size: 31px;
+  letter-spacing: 0.08em;
+}
+.band-grid {
   background-color: #b0824f;
-  background-image:
-    radial-gradient(
-      ellipse 120% 90% at 50% 40%,
-      transparent 55%,
-      rgba(43, 26, 5, 0.26)
-    ),
-    url("/cork.jpg");
-  background-size: auto, 760px;
-  background-repeat: no-repeat, repeat;
+  background-image: url("/cork.jpg");
+  background-size: 520px auto;
 }
-header {
-  background: #f8f3e3 !important;
-  box-shadow: 0 4px 14px rgba(43, 26, 5, 0.35);
-}
-/* 紙のシートとして貼る */
-.hero-static,
-.cover-dates,
-.summary-bar,
-main .section {
-  background-color: #f8f3e3;
-  border: 1px solid #e3d9be;
-  border-radius: 3px;
-  box-shadow: 0 12px 26px rgba(43, 26, 5, 0.38);
-}
-.hero-static {
-  max-width: 1080px;
-  margin: 26px auto 0;
-}
-.cover-dates {
-  max-width: 1080px;
-  margin: 20px auto 0;
-  transform: rotate(-0.25deg);
-}
-.summary-bar {
-  max-width: 1080px;
-  margin: 20px auto 0;
-  border-bottom: 1px solid #e3d9be;
-}
-main .section {
-  margin: 36px auto;
-  padding: 46px 42px;
-  position: relative;
-}
-main .section:nth-of-type(odd) {
-  transform: rotate(0.3deg);
-}
-main .section:nth-of-type(even) {
-  transform: rotate(-0.28deg);
-}
-/* シートのテープ */
-#about::before,
-#venue::before,
-#sequence::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: -13px;
-  width: 118px;
-  height: 27px;
-  transform: translateX(-50%) rotate(-2deg);
-  background: rgba(243, 222, 150, 0.8);
-  box-shadow: 0 2px 5px rgba(43, 26, 5, 0.25);
-  z-index: 4;
-}
-/* FORMATION は板に直接貼る（シートと枠を外す） */
-main .section#formation {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  transform: none;
-  padding-left: 6px;
-  padding-right: 6px;
+.band-slot {
+  background-color: #fbf7ea;
 }
 #formation .section-head {
-  border-bottom-color: rgba(60, 38, 10, 0.45);
-}
-#formation .band-grid {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  padding: 26px 10px 10px;
+  background: #f5eeda;
+  border: 1px solid #e3d9be;
+  box-shadow: 0 6px 14px rgba(43, 26, 5, 0.18);
+  padding: 12px 20px;
+  transform: rotate(-0.4deg);
 }
 #sequence {
-  background: #0b0c0d;
-  transform: rotate(-0.3deg);
+  background: #efe7d2;
+  color: var(--ink);
+  border: 1px solid #d9cfb6;
+  box-shadow: 0 10px 24px rgba(43, 26, 5, 0.12);
 }
-footer {
-  color: #f7efdb;
+#sequence .section-head {
+  border-bottom-color: var(--line);
 }
-footer a {
-  color: #f4d21f;
+#sequence .section-head .no {
+  color: #b98a00;
 }
-@media (max-width: 640px) {
-  main .section {
-    margin: 22px 10px;
-    padding: 28px 18px;
-  }
-  .hero-static,
-  .cover-dates,
-  .summary-bar {
-    margin-left: 10px;
-    margin-right: 10px;
-  }
-  main .section#formation {
-    padding-left: 0;
-    padding-right: 0;
-  }
+#sequence .day-frame {
+  border-color: #d9cfb6;
+  background: rgba(255, 253, 244, 0.55);
 }
-
-/* --- Mock K2: 時間帯で変わる掲示板 + ドット時計 + 隠しメモ --- */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 55;
-  pointer-events: none;
-  transition: background 1.2s ease;
+#sequence .day-frame h3 {
+  color: var(--ink);
 }
-html[data-phase="morning"] body::before {
-  background: rgba(255, 226, 150, 0.1);
+#sequence .tbd {
+  color: var(--sub);
 }
-html[data-phase="evening"] body::before {
-  background: rgba(214, 116, 32, 0.16);
-}
-html[data-phase="night"] body::before {
-  background: rgba(13, 18, 48, 0.38);
-}
-.live-clock {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin: 4px 0 24px;
-}
-.live-clock-label {
-  color: #f4d21f;
-  font-family: "Bebas Neue", sans-serif;
-  font-size: 20px;
-  letter-spacing: 0.3em;
-}
-#dot-clock {
-  display: block;
-  width: min(400px, 72vw);
-  height: auto;
-}
-html[data-phase="night"] #dot-clock {
-  filter: drop-shadow(0 0 7px rgba(244, 210, 31, 0.55));
-}
+/* 隠しメモ */
 .egg-zone {
   position: relative;
   height: 96px;
@@ -898,66 +793,4 @@ html[data-phase="night"] #dot-clock {
 .egg-slip.fallen {
   animation: eggfall 0.8s cubic-bezier(0.5, 0, 0.8, 0.4) forwards;
   pointer-events: none;
-}
-
-/* --- Mock K3: 日本語主体・黒と白のコントラスト緩和 --- */
-.section-head h2 {
-  font-family: "Zen Kaku Gothic New", sans-serif;
-  font-weight: 700;
-  font-size: 31px;
-  letter-spacing: 0.08em;
-}
-/* シートと紙片の白を落とす */
-.hero-static,
-.cover-dates,
-.summary-bar,
-main .section {
-  background-color: #f5eeda;
-}
-.band-slot {
-  background-color: #fbf7ea;
-}
-/* FORMATION の見出しは紙タグに乗せる */
-#formation .section-head {
-  background: #f5eeda;
-  border: 1px solid #e3d9be;
-  border-bottom: 1px solid #e3d9be;
-  box-shadow: 0 6px 14px rgba(43, 26, 5, 0.3);
-  padding: 12px 20px;
-  transform: rotate(-0.4deg);
-}
-/* SEQUENCE は紙シートに戻し、黒は時計の帯だけにする */
-#sequence {
-  background: #f5eeda;
-  color: var(--ink);
-}
-#sequence .section-head {
-  border-bottom-color: var(--line);
-}
-#sequence .section-head .no {
-  color: #b98a00;
-}
-#sequence .day-frame {
-  border-color: #d9cfb6;
-}
-#sequence .day-frame h3 {
-  color: var(--ink);
-}
-#sequence .tbd {
-  color: var(--sub);
-}
-.live-clock {
-  background: #0b0c0d;
-  border-radius: 8px;
-  padding: 16px 22px;
-  box-shadow: 0 8px 18px rgba(43, 26, 5, 0.35);
-}
-.live-clock-label {
-  font-family: "Zen Kaku Gothic New", sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.24em;
-}
-#sequence .day-frame {
-  background: rgba(255, 253, 244, 0.55);
 }
