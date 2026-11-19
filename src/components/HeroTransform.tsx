@@ -10,7 +10,7 @@ import "./HeroTransform.css";
  * 気づいた人だけ変わる、隠し要素としての位置づけ。
  *
  * - 変形は一方向。完了したらそのセッションの間は最終状態に
- *   固定される（sessionStorage）。ロゴ下のボタンで再演できる。
+ *   固定される（sessionStorage）。再演の手段は置かない。
  * - 開催の約1.5週間前（2027-02-24）以降は、最初から
  *   recollage ロゴを常時表示する。
  * - prefers-reduced-motion の端末では変形後の静止画。
@@ -93,15 +93,6 @@ export default function HeroTransform({
     rafRef.current = requestAnimationFrame(tick);
   };
 
-  const replay = () => {
-    try {
-      window.sessionStorage.removeItem(STORAGE_KEY);
-    } catch {
-      /* 何もしない */
-    }
-    play();
-  };
-
   if (mode === "done") {
     return (
       <section className="hero-static" aria-label="recollage">
@@ -116,9 +107,6 @@ export default function HeroTransform({
         <div className="hero-meta" style={{ opacity: 1 }}>
           <p className="dates">{dateLabel}</p>
           <p className="venue">{venue}</p>
-          <button type="button" className="hero-replay" onClick={replay}>
-            ロゴの変形をもう一度見る
-          </button>
         </div>
       </section>
     );
